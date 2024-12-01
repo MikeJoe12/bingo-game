@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mishail Bingo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #10b981;
+            --background-color: #f0f4f8; /* Slightly modified background */
+            --card-bg: #f1f5f9; /* Off-white card background */
+            --cell-background: #ffffff; /* Keep cells white */
+            --text-color: #1f2937;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e6eaf0 100%);
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.1), 
+                0 5px 15px rgba(0,0,0,0.05);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 2.5rem;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .player-name {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+
+        input {
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2), 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+
+        #bingoCard {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 10px;
+        }
+
+        #bingoCard th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 900;
+            font-size: 2rem;
+            text-transform: uppercase;
+            width: 20%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        #bingoCard td {
+            background-color: var(--cell-background);
+            border-radius: 8px;
+            height: 80px;
+            width: 20%;
+            font-size: 2rem;  /* Increased font size */
+            font-weight: 900;  /* Made even bolder */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            vertical-align: middle;
+            box-shadow: 
+                3px 3px 6px rgba(0,0,0,0.05) inset,
+                -3px -3px 6px rgba(0,0,0,0.05) inset;
+            border: 1px solid #e2e8f0;
+        }
+
+        #bingoCard td:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 
+                0 10px 20px rgba(0,0,0,0.2),
+                3px 3px 6px rgba(255,255,255,0.6) inset,
+                -3px -3px 6px rgba(0,0,0,0.1) inset;
+        }
+
+        #bingoCard td.marked {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        #bingoCard td.free-cell {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: default;
+            font-weight: 900;
+            box-shadow: 
+                0 10px 20px rgba(0,0,0,0.2),
+                3px 3px 6px rgba(255,255,255,0.3) inset,
+                -3px -3px 6px rgba(0,0,0,0.2) inset;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+
+            #bingoCard td {
+                height: 60px;
+                font-size: 1.7rem;  /* Adjusted for mobile */
+            }
+
+            #bingoCard th {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mishail Bingo</h1>
+        <div class="input-group" id="loginSection">
+            <input type="text" id="playerName" placeholder="Enter your name">
+            <button onclick="generateCard()">Generate Card</button>
+        </div>
+        <div id="playerNameDisplay" class="player-name"></div>
+        <table id="bingoCard"></table>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let playerName = '';
+
+        function generateCard() {
+            playerName = document.getElementById('playerName').value;
+            if (!playerName) {
+                alert('Please enter your name');
+                return;
+            }
+
+            // Remove login section and display player name
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('playerNameDisplay').textContent = `${playerName}'s Bingo Card`;
+
+            const card = [];
+            const usedNumbers = new Set();
+            const headers = ['B', 'I', 'N', 'G', 'O'];
+
+            for (let i = 0; i < 5; i++) {
+                const row = [];
+                for (let j = 0; j < 5; j++) {
+                    let num;
+                    do {
+                        num = Math.floor(Math.random() * 15) + 1 + (j * 15);
+                    } while (usedNumbers.has(num));
+                    usedNumbers.add(num);
+                    row.push(num);
+                }
+                card.push(row);
+            }
+
+            card[2][2] = 'FREE';
+
+            const table = document.getElementById('bingoCard');
+            table.innerHTML = '';
+
+            // Add header row
+            const headerRow = table.insertRow();
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+
+            for (let i = 0; i < 5; i++) {
+                const row = table.insertRow();
+                for (let j = 0; j < 5; j++) {
+                    const cell = row.insertCell();
+                    cell.textContent = card[i][j];
+                    
+                    // Special handling for FREE cell
+                    if (card[i][j] === 'FREE') {
+                        cell.classList.add('free-cell');
+                        cell.onclick = null; // Disable clicking
+                    } else {
+                        cell.onclick = function() {
+                            this.classList.toggle('marked');
+                            sendMarkedNumber(card[i][j], playerName);
+                        };
+                    }
+                }
+            }
+
+            // Send player name and card to the server
+            fetch('/saveCard', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ playerName, card }),
+            });
+        }
+
+        function sendMarkedNumber(number, playerName) {
+            socket.emit('markNumber', { playerName, number });
+        }
+    </script>
+</body>
+</html>
