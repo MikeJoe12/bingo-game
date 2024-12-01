@@ -513,9 +513,9 @@
 //--------------------------------
 function createBingoCardTable(card, playerName) {
     const table = document.createElement('table');
-																
+    table.className = 'bingo-table';
     table.setAttribute('data-player', playerName);
-    
+
     // Add header row
     const headerRow = table.insertRow();
     ['B', 'I', 'N', 'G', 'O'].forEach(header => {
@@ -524,15 +524,63 @@ function createBingoCardTable(card, playerName) {
         headerRow.appendChild(th);
     });
 
+    // Populate Bingo card numbers
     for (let i = 0; i < 5; i++) {
         const row = table.insertRow();
         for (let j = 0; j < 5; j++) {
             const cell = row.insertCell();
-            cell.textContent = card[i][j];
-            cell.setAttribute('data-number', card[i][j]);
+            cell.textContent = card[i][j]; // Assuming card is a 2D array of numbers
+			cell.setAttribute('data-number', card[i][j]);
         }
     }
-    return table;
+
+    // Create remove button
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'X';
+    removeButton.style.marginLeft = '10px';
+    removeButton.onclick = () => removePlayerCard(playerName); // Call the existing function
+
+    // Create a container for player name and button
+    const playerHeader = document.createElement('div');
+    playerHeader.textContent = playerName;
+    playerHeader.appendChild(removeButton);
+
+    // Create a container for the entire player card
+    const playerDiv = document.createElement('div');
+    playerDiv.className = 'player-card'; // Add class for styling
+    playerDiv.setAttribute('data-player', playerName);
+    
+    // Append header and table to the player div
+    playerDiv.appendChild(playerHeader);
+    playerDiv.appendChild(table);
+
+    return playerDiv;
+}
+
+function removePlayerCard(playerName) {
+    // First, remove the player from the server
+    removePlayerFromServer(playerName);
+}
+
+function removePlayerFromServer(playerName) {
+    fetch(`/removePlayer/${playerName}`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log(data.message); // Log success message
+        // Now remove from display only if successfully removed from server
+        const playerCard = document.querySelector(`.player-card[data-player="${playerName}"]`);
+        if (playerCard) {
+            playerCard.remove(); // Removes the player card from the display
+        }
+    })
+    .catch(error => console.error('Error:', error));
 }
 
 function fetchPlayerCards() {
@@ -540,16 +588,12 @@ function fetchPlayerCards() {
         .then(response => response.json())
         .then(data => {
             const playerList = document.getElementById('playerCards');
+    //        playerList.innerHTML = ''; // Clear existing cards to prevent duplicates
+
             data.forEach(player => {
-                let playerDiv = document.querySelector(`.player-card[data-player="${player.playerName}"]`);
-                if (!playerDiv) {
-                    playerDiv = document.createElement('div');
-                    playerDiv.className = 'player-card';
-                    playerDiv.setAttribute('data-player', player.playerName);
-                    const playerName = document.createElement('h3');
-                    playerName.textContent = player.playerName;
-                    playerDiv.appendChild(playerName);
-                    playerDiv.appendChild(createBingoCardTable(player.card, player.playerName));
+                let existingCard = document.querySelector(`.player-card[data-player="${player.playerName}"]`);
+                if (!existingCard) {
+                    let playerDiv = createBingoCardTable(player.card, player.playerName);
                     playerList.appendChild(playerDiv);
                 }
             });

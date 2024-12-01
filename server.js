@@ -56,3 +56,17 @@ app.get('/player', (req, res) => {
 app.get('/Shuffle.mp3', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'Shuffle.mp3'));
 });
+// Endpoint to remove a player by name
+app.delete('/removePlayer/:playerName', (req, res) => {
+    const playerName = req.params.playerName;
+    const initialLength = playerCards.length;
+    
+    // Filter out the player from the array
+    playerCards = playerCards.filter(player => player.playerName !== playerName);
+    
+    if (playerCards.length < initialLength) {
+        res.status(200).send({ message: `Player ${playerName} removed successfully.` });
+    } else {
+        res.status(404).send({ message: `Player ${playerName} not found.` });
+    }
+});
