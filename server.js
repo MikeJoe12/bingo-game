@@ -53,3 +53,6 @@ server.listen(port, () => {
 app.get('/player', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'player.html'));
 });
+app.get('/Shuffle.mp3', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'Shuffle.mp3'));
+});
