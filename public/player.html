@@ -9,9 +9,9 @@
         :root {
             --primary-color: #3b82f6;
             --secondary-color: #10b981;
-            --background-color: #f0f4f8;
-            --card-bg: #f1f5f9;
-            --cell-background: #ffffff;
+            --background-color: #f0f4f8; /* Slightly modified background */
+            --card-bg: #f1f5f9; /* Off-white card background */
+            --cell-background: #ffffff; /* Keep cells white */
             --text-color: #1f2937;
         }
 
@@ -63,13 +63,12 @@
 
         .input-group {
             display: flex;
-            flex-direction: column;
             margin-bottom: 20px;
             gap: 10px;
         }
 
         input {
-            width: 100%;
+            flex-grow: 1;
             padding: 12px 15px;
             border: 2px solid var(--primary-color);
             border-radius: 8px;
@@ -77,7 +76,6 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             background-color: white;
-            margin-bottom: 10px;
         }
 
         input:focus {
@@ -96,8 +94,8 @@
             font-weight: 600;
             transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
         }
+
 
         #bingoCard {
             width: 100%;
@@ -123,8 +121,8 @@
             border-radius: 8px;
             height: 80px;
             width: 20%;
-            font-size: 2rem;
-            font-weight: 900;
+            font-size: 2rem;  /* Increased font size */
+            font-weight: 900;  /* Made even bolder */
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: center;
@@ -157,13 +155,9 @@
                 padding: 15px;
             }
 
-            h1 {
-                font-size: 2rem;
-            }
-
             #bingoCard td {
                 height: 60px;
-                font-size: 1.7rem;
+                font-size: 1.7rem;  /* Adjusted for mobile */
             }
 
             #bingoCard th {
@@ -185,23 +179,94 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io();
-        let playerCard = null;
-
-        // Check localStorage for saved game state on load
-        window.addEventListener('load', () => {
-            const savedGameState = localStorage.getItem('bingoGameState');
-            if (savedGameState) {
-                const gameState = JSON.parse(savedGameState);
-                playerCard = gameState.card;
-                renderCard(gameState.playerName, gameState.card, gameState.markedCells);
-                document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('playerNameDisplay').textContent = `${gameState.playerName}'s Bingo Card`;
+	(function() {
+    const SESSION_KEY = 'mishail-bingo-session';
+    
+    function manageBingoSession() {
+        // Check if a session already exists
+        const existingSession = localStorage.getItem(SESSION_KEY);
+        
+        if (existingSession) {
+            // If a session exists, prevent opening a new card
+            showSessionError();
+            return false;
+        }
+        
+        // Create a new session
+        const sessionId = generateUniqueSessionId();
+        localStorage.setItem(SESSION_KEY, sessionId);
+        
+        // Add event listeners to handle session management
+        setupSessionHandling();
+        
+        return true;
+    }
+    
+    // Generate a unique session ID
+    function generateUniqueSessionId() {
+        return `bingo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
+    
+    // Display error when multiple sessions are attempted
+    function showSessionError() {
+        const loginSection = document.getElementById('loginSection');
+        if (loginSection) {
+            loginSection.innerHTML = `
+                <div style="color: red; text-align: center;">
+                    <p>A bingo card is already open.</p>
+                    <p>Please close the existing card before opening a new one.</p>
+                </div>
+            `;
+        }
+    }
+    
+    // Setup session handling mechanisms
+    function setupSessionHandling() {
+        // Handle page reload attempts
+        window.addEventListener('beforeunload', (event) => {
+            // Check if we should allow reload
+            if (!shouldAllowReload()) {
+                event.preventDefault(); // Cancel the event
+                event.returnValue = ''; // Display a message in some browsers
+                return ''; // Explicit return to show reload prevention
             }
         });
 
+        // Cleanup when page is unloaded
+        window.addEventListener('unload', clearSession);
+    }
+    
+    // Determine if reload should be allowed
+    function shouldAllowReload() {
+        // Get the current timestamp
+        const currentTime = Date.now();
+        
+        // Get the session start time
+        const sessionStartTime = parseInt(localStorage.getItem(SESSION_KEY), 10);
+        
+        // Allow reload within 5 seconds of session start
+        // This gives a small window for accidental reloads
+        return (currentTime - sessionStartTime) < 5000;
+    }
+    
+    // Clear the session
+    function clearSession() {
+        localStorage.removeItem(SESSION_KEY);
+    }
+    
+    // Run session management when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!manageBingoSession()) {
+            // Prevent further interaction if session is invalid
+            document.body.style.pointerEvents = 'none';
+        }
+    });
+})();
+        const socket = io();
+        let playerName = '';
+
         function generateCard() {
-            const playerName = document.getElementById('playerName').value;
+            playerName = document.getElementById('playerName').value;
             if (!playerName) {
                 alert('Please enter your name');
                 return;
@@ -229,35 +294,13 @@
             }
 
             card[2][2] = 'FREE';
-            playerCard = card;
 
-            // Save game state to localStorage
-            const gameState = {
-                playerName,
-                card,
-                markedCells: []
-            };
-            localStorage.setItem('bingoGameState', JSON.stringify(gameState));
-
-            // Send player name and card to the server
-            fetch('/saveCard', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ playerName, card }),
-            });
-
-            renderCard(playerName, card, gameState.markedCells);
-        }
-
-        function renderCard(playerName, card, markedCells) {
             const table = document.getElementById('bingoCard');
             table.innerHTML = '';
 
             // Add header row
             const headerRow = table.insertRow();
-            ['B', 'I', 'N', 'G', 'O'].forEach(header => {
+            headers.forEach(header => {
                 const th = document.createElement('th');
                 th.textContent = header;
                 headerRow.appendChild(th);
@@ -268,36 +311,31 @@
                 for (let j = 0; j < 5; j++) {
                     const cell = row.insertCell();
                     cell.textContent = card[i][j];
-
+                    
                     // Special handling for FREE cell
                     if (card[i][j] === 'FREE') {
                         cell.classList.add('free-cell');
+                        cell.onclick = null; // Disable clicking
                     } else {
                         cell.onclick = function() {
                             this.classList.toggle('marked');
-                            sendMarkedNumber(card[i][j], i, j);
+                            sendMarkedNumber(card[i][j], playerName);
                         };
-                    }
-
-                    // Mark cells based on the markedCells array
-                    if (markedCells.includes(`${i}-${j}`)) {
-                        cell.classList.add('marked');
                     }
                 }
             }
+
+            // Send player name and card to the server
+            fetch('/saveCard', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ playerName, card }),
+            });
         }
 
-        function sendMarkedNumber(number, rowIndex, cellIndex) {
-            const playerName = document.getElementById('playerNameDisplay').textContent.replace("'s Bingo Card", "");
-            const markedCellIndex = `${rowIndex}-${cellIndex}`;
-
-            // Update markedCells array
-            const gameState = JSON.parse(localStorage.getItem('bingoGameState'));
-            if (!gameState.markedCells.includes(markedCellIndex)) {
-                gameState.markedCells.push(markedCellIndex);
-                localStorage.setItem('bingoGameState', JSON.stringify(gameState));
-            }
-
+        function sendMarkedNumber(number, playerName) {
             socket.emit('markNumber', { playerName, number });
         }
     </script>
