@@ -337,6 +337,10 @@
     background-color: #333;
     color: white;
 }
+  .disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
     </style>
 </head>
 <body>
@@ -579,6 +583,21 @@ function removePlayerFromServer(playerName) {
         if (playerCard) {
             playerCard.remove(); // Removes the player card from the display
         }
+    })
+    .catch(error => console.error('Error:', error));
+	closeCard(playerName);
+}
+
+function closeCard(playerName) {
+  fetch(`/deactivatePlayer/${playerName}`, { method: 'POST' })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data.message);
+      // Remove the card from the view
+      const card = document.querySelector(`[data-player-name="${playerName}"]`);
+      if (card) {
+        card.remove();
+      }
     })
     .catch(error => console.error('Error:', error));
 }

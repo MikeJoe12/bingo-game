@@ -264,8 +264,10 @@
 })();
         const socket = io();
         let playerName = '';
+		let currentPlayerName = '';							 
 
         function generateCard() {
+            currentPlayerName = document.getElementById('playerName').value;												 
             playerName = document.getElementById('playerName').value;
             if (!playerName) {
                 alert('Please enter your name');
@@ -335,6 +337,23 @@
             });
         }
 
+//=================================
+function disableBingoCard() {
+  
+ socket.on('playerDeactivated', ({ playerName }) => {
+    if (playerName === currentPlayerName) {
+          const bingoCard = document.getElementById('bingoCard');
+    bingoCard.classList.add('disabled');
+    const cells = bingoCard.getElementsByTagName('td');
+    for (let cell of cells) {
+      cell.onclick = null;
+    }
+    alert('You are removed from the server, and your bingo card has been deactivated. You can no longer play.');
+    }
+  });
+  }
+  setInterval(disableBingoCard, 3000);
+//===================================
         function sendMarkedNumber(number, playerName) {
             socket.emit('markNumber', { playerName, number });
         }

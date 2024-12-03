@@ -56,6 +56,18 @@ app.get('/player', (req, res) => {
 app.get('/Shuffle.mp3', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'Shuffle.mp3'));
 });
+app.post('/deactivatePlayer/:playerName', (req, res) => {
+  const playerName = req.params.playerName;
+  const playerIndex = playerCards.findIndex(player => player.playerName === playerName);
+  
+  if (playerIndex !== -1) {
+    playerCards[playerIndex].active = false;
+    io.emit('playerDeactivated', { playerName });
+    res.status(200).send({ message: `Player ${playerName} deactivated successfully.` });
+  } else {
+    res.status(404).send({ message: `Player ${playerName} not found.` });
+  }
+});
 // Endpoint to remove a player by name
 app.delete('/removePlayer/:playerName', (req, res) => {
     const playerName = req.params.playerName;
