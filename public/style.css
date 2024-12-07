@@ -14,17 +14,17 @@
 
 #login-box {
     background-color: white;
-    padding: 30px;
+    padding: 15px; /* Increased padding for the box */
     border-radius: 12px; /* Slightly rounded corners */
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Subtle shadow */
     text-align: center;
-    max-width: 400px;
+    max-width: 500px; /* Increased max width */
     width: 90%;
 }
 
 #login-box h2 {
     color: #333; /* Ensure title is visible */
-    font-size: 28px;
+    font-size: 32px; /* Larger title */
     margin-bottom: 20px;
 }
 
@@ -34,7 +34,30 @@
     font-size: 14px;
 }
 
+#password-input {
+    width: 80%; /* Ensure the input takes full width */
+    padding: 15px; /* Increased padding for a larger input field */
+    font-size: 18px; /* Larger text inside the input field */
+    margin-bottom: 20px; /* Space between the input and the button */
+    border: 1px solid #ccc; /* Subtle border */
+    border-radius: 8px; /* Rounded corners */
+    box-sizing: border-box; /* Ensure padding is included in width */
+}
 
+#login-box button {
+    background-color: #2a5298; /* Button color */
+    color: white; /* Button text color */
+    padding: 15px 30px; /* Increased padding for a larger button */
+    font-size: 18px; /* Larger font size */
+    border: none;
+    border-radius: 8px; /* Slightly rounded button corners */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#login-box button:hover {
+    background-color: #1e3c72; /* Darker shade on hover */
+}
 
 
         body {
