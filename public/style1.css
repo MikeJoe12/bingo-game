@@ -194,3 +194,22 @@
     flex-direction: column;
     align-items: center;
   }
+  
+  @keyframes cellFlash {
+    0%, 100% { 
+        transform: scale(1);
+        background-color: var(--cell-background);
+        border-color: var(--primary-color);
+    }
+    50% { 
+        transform: scale(2.1); /* Makes the cell 20% wider */
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+    }
+}
+
+#bingoCard td.matched {
+    animation: cellFlash 1s ease-in-out;
+    color: white;
+    font-weight: bold;
+}

@@ -30,7 +30,22 @@ function playChime() {
   } else if (number >= 61 && number <= 75) {
     document.getElementById('calledNumber').textContent = `O ${number}`;
   }
+  
+    // Find and flash matching cells
+    const cells = document.querySelectorAll('#bingoCard td');
+    cells.forEach(cell => {
+        if (parseInt(cell.textContent) === number) {
+            cell.classList.add('matched');
+            
+            // Remove the matched class after animation completes
+            setTimeout(() => {
+                cell.classList.remove('matched');
+            }, 1000);
+        }
+    });
+	
   playChime();
+  
   });
 
     function generateCard() {
@@ -142,5 +157,3 @@ function playChime() {
             e.preventDefault();
         });
 //==============================================================	
-	
-	
