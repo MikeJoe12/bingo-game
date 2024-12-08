@@ -94,7 +94,7 @@
         socket.emit('markNumber', { playerName, number });
     }
 //==============================================================
- // Absolutely prevent page reload
+  // Absolutely prevent page reload
         history.pushState(null, null, location.href);
         window.addEventListener('popstate', function() {
             history.pushState(null, null, location.href);
@@ -113,25 +113,12 @@
             return false; // Explicitly prevent reload
         };
 
-        // Disable all reload-related browser actions
-        document.onkeydown = function(e) {
-            // Prevent F5, Ctrl+R, Cmd+R, and other reload shortcuts
-            if (e.keyCode === 116 || // F5
-                (e.ctrlKey && e.keyCode === 82) || // Ctrl+R
-                (e.metaKey && e.keyCode === 82)) { // Cmd+R
-                e.preventDefault();
-                return false;
-            }
-        };
-
+        
         // Prevent reload on mobile gestures and browser actions
         document.addEventListener('touchmove', function(e) {
             e.preventDefault();
         }, { passive: false });
 
-        document.body.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-        }, { passive: false });
 
         // Disable context menu and selection to prevent accidental actions
         document.addEventListener('contextmenu', function(e) {
