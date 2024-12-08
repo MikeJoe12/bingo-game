@@ -94,7 +94,7 @@
         socket.emit('markNumber', { playerName, number });
     }
 //==============================================================
-  // Absolutely prevent page reload
+ // Absolutely prevent page reload
         history.pushState(null, null, location.href);
         window.addEventListener('popstate', function() {
             history.pushState(null, null, location.href);
@@ -112,14 +112,7 @@
             e.preventDefault(); // Prevent default browser behavior
             return false; // Explicitly prevent reload
         };
-
-        
-        // Prevent reload on mobile gestures and browser actions
-        document.addEventListener('touchmove', function(e) {
-            e.preventDefault();
-        }, { passive: false });
-
-
+       
         // Disable context menu and selection to prevent accidental actions
         document.addEventListener('contextmenu', function(e) {
             e.preventDefault();
@@ -128,13 +121,6 @@
         document.addEventListener('selectstart', function(e) {
             e.preventDefault();
         });
-
-        // Ensure no page reload on iOS
-        if ('standalone' in navigator && navigator.standalone) {
-            document.body.addEventListener('touchmove', function(e) {
-                e.preventDefault();
-            }, { passive: false });
-        }
 
         // Additional safeguard for browser history manipulation
         window.addEventListener('unload', function(e) {
