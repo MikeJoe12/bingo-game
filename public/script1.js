@@ -1,109 +1,3 @@
-
-    (function () {
-        const SESSION_KEY = 'mishail-bingo-session';
-        const HEARTBEAT_KEY = 'mishail-bingo-heartbeat';
-        const HEARTBEAT_INTERVAL = 2000; // 2 seconds
-        const HEARTBEAT_EXPIRY = 5000; // 5 seconds (allowable delay before considering session stale)
-
-        let heartbeatInterval;
-
-        // Function to check if a session is active
-        function isSessionActive() {
-            const sessionData = JSON.parse(localStorage.getItem(SESSION_KEY));
-            if (!sessionData) return false;
-
-            const { timestamp } = sessionData;
-            const now = Date.now();
-
-            // Check if the session is stale
-            return now - timestamp <= HEARTBEAT_EXPIRY;
-        }
-
-        // Function to create a new session
-        function createSession() {
-            const sessionId = generateUniqueSessionId();
-            const timestamp = Date.now();
-
-            localStorage.setItem(SESSION_KEY, JSON.stringify({ sessionId, timestamp }));
-            startHeartbeat();
-        }
-
-        // Start a heartbeat to indicate that the session is active
-        function startHeartbeat() {
-            heartbeatInterval = setInterval(() => {
-                const sessionData = JSON.parse(localStorage.getItem(SESSION_KEY));
-                if (sessionData) {
-                    sessionData.timestamp = Date.now();
-                    localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-                }
-            }, HEARTBEAT_INTERVAL);
-        }
-
-        // Stop the heartbeat when the session ends
-        function stopHeartbeat() {
-            clearInterval(heartbeatInterval);
-        }
-
-        // Cleanup session on tab close or unload
-        function setupSessionCleanup() {
-            // Clear session on page unload
-            window.addEventListener('unload', () => {
-                stopHeartbeat();
-                localStorage.removeItem(SESSION_KEY);
-                localStorage.removeItem(HEARTBEAT_KEY);
-            });
-
-            // Warning for accidental refresh or close
-            window.addEventListener('beforeunload', (event) => {
-                event.preventDefault();
-                event.returnValue = ''; // Display a generic warning message
-                return ''; // For some older browsers
-            });
-        }
-
-        // Generate a unique session ID
-        function generateUniqueSessionId() {
-            return `bingo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        }
-
-        // Display error if a session is already active
-        function showSessionError() {
-            const loginSection = document.getElementById('loginSection');
-            if (loginSection) {
-                loginSection.innerHTML = `
-                    <div style="color: red; text-align: center;">
-                        <p>A bingo card is already open.</p>
-                        <p>Please close the existing card before opening a new one.</p>
-                    </div>
-                `;
-            }
-            document.body.style.pointerEvents = 'none'; // Disable further interactions
-        }
-
-        // Initialize session management
-        document.addEventListener('DOMContentLoaded', () => {
-            if (isSessionActive()) {
-                // If a valid session exists, show an error
-                showSessionError();
-            } else {
-                // No active session, create a new one
-                createSession();
-                setupSessionCleanup();
-            }
-        });
-
-        // Handle cross-tab communication using the storage event
-        window.addEventListener('storage', (event) => {
-            if (event.key === SESSION_KEY && event.newValue) {
-                // Another tab created a session; show error in this tab
-                showSessionError();
-            } else if (event.key === SESSION_KEY && !event.newValue) {
-                // Session was cleared in another tab; reload this tab
-                location.reload();
-            }
-        });
-    })();
-
 	const chimeSound = document.getElementById('chimeSound');
 	
     const socket = io();
@@ -199,3 +93,66 @@
     function markNumber(number, playerName) {
         socket.emit('markNumber', { playerName, number });
     }
+//==============================================================
+ // Absolutely prevent page reload
+        history.pushState(null, null, location.href);
+        window.addEventListener('popstate', function() {
+            history.pushState(null, null, location.href);
+        });
+
+        // Comprehensive reload prevention
+        window.addEventListener('beforeunload', function(e) {
+            e.preventDefault(); // Prevent default browser behavior
+            e.returnValue = ''; // Required for Chrome
+            return ''; // For other browsers
+        });
+
+        // Prevent page reload via multiple methods
+        window.onbeforeunload = function(e) {
+            e.preventDefault(); // Prevent default browser behavior
+            return false; // Explicitly prevent reload
+        };
+
+        // Disable all reload-related browser actions
+        document.onkeydown = function(e) {
+            // Prevent F5, Ctrl+R, Cmd+R, and other reload shortcuts
+            if (e.keyCode === 116 || // F5
+                (e.ctrlKey && e.keyCode === 82) || // Ctrl+R
+                (e.metaKey && e.keyCode === 82)) { // Cmd+R
+                e.preventDefault();
+                return false;
+            }
+        };
+
+        // Prevent reload on mobile gestures and browser actions
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        document.body.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+
+        // Disable context menu and selection to prevent accidental actions
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('selectstart', function(e) {
+            e.preventDefault();
+        });
+
+        // Ensure no page reload on iOS
+        if ('standalone' in navigator && navigator.standalone) {
+            document.body.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+        }
+
+        // Additional safeguard for browser history manipulation
+        window.addEventListener('unload', function(e) {
+            e.preventDefault();
+        });
+//==============================================================	
+	
+	
