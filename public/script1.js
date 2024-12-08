@@ -1,4 +1,19 @@
-	const chimeSound = document.getElementById('chimeSound');
+// Hybrid approach supporting both methods
+function playChime() {
+    // Try HTML5 Audio first
+    const htmlAudio = document.getElementById('chimeSound');
+    if (htmlAudio) {
+        htmlAudio.play().catch(error => {
+            // If HTML5 audio fails, try Web Audio API
+            if (audioContext && audioBuffer) {
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(audioContext.destination);
+                source.start(0);
+            }
+        });
+    }
+}
 	
     const socket = io();
     let playerName = '';
@@ -15,7 +30,7 @@
   } else if (number >= 61 && number <= 75) {
     document.getElementById('calledNumber').textContent = `O ${number}`;
   }
-  chimeSound.play();
+  playChime();
   });
 
     function generateCard() {
