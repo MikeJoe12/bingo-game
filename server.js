@@ -16,6 +16,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 let playerCards = [];
 
+io.on('connection', (socket) => {
+  socket.on('markNumber', ({ playerName, number }) => {
+    io.emit('numberMarked', { playerName, number });
+  });
+
+  // Add this new event
+  socket.on('numberCalled', (number) => {
+    io.emit('displayCalledNumber', number);
+  });
+});								 
 app.post('/saveCard', (req, res) => {
     const { playerName, card } = req.body;
     playerCards.push({ playerName, card });
@@ -39,12 +49,6 @@ app.post('/markNumber', (req, res) => {
     // Broadcast the marked number to all connected clients
     io.emit('numberMarked', { playerName, number });
     res.sendStatus(200);
-});
-
-io.on('connection', (socket) => {
-    socket.on('markNumber', ({ playerName, number }) => {
-        io.emit('numberMarked', { playerName, number });
-    });
 });
 
 server.listen(port, () => {
