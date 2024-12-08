@@ -1,4 +1,4 @@
-        :root {
+	        :root {
             --primary-color: #3b82f6;
             --secondary-color: #10b981;
             --background-color: #f0f4f8; /* Slightly modified background */
@@ -94,10 +94,10 @@
 
 
         #bingoCard {
-            width: 100%;
+            width: 110%;
             table-layout: fixed;
             border-collapse: separate;
-            border-spacing: 10px;
+            border-spacing: 5px;
         }
 
         #bingoCard th {
@@ -113,38 +113,41 @@
         }
 
         #bingoCard td {
-            background-color: var(--cell-background);
-            border-radius: 8px;
-            height: 80px;
-            width: 20%;
-            font-size: 2rem;  /* Increased font size */
-            font-weight: 900;  /* Made even bolder */
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            vertical-align: middle;
-            box-shadow: 
-                3px 3px 6px rgba(0,0,0,0.05) inset,
-                -3px -3px 6px rgba(0,0,0,0.05) inset;
-            border: 1px solid #e2e8f0;
-        }
+    background-color: var(--cell-background);
+    border-radius: 8px;
+    height: 80px;
+    width: 30%;
+    font-size: 2rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    vertical-align: middle;
+        box-shadow: 
+        0 10px 20px rgba(0,0,0,0.2),
+        3px 3px 6px rgba(255,255,255,0.3) inset,
+        -3px -3px 6px rgba(0,0,0,0.2) inset;
+    border: 2px solid var(--primary-color); /* Updated border */
+}
 
-        #bingoCard td.marked {
-            background-color: var(--secondary-color);
-            color: white;
-            font-weight: bold;
-        }
+#bingoCard td.marked {
+    background-color: var(--secondary-color);
+    color: white;
+    font-weight: bold;
+    border-color: var(--secondary-color); /* Matching border color when marked */
+}
 
-        #bingoCard td.free-cell {
-            background-color: var(--primary-color);
-            color: white;
-            cursor: default;
-            font-weight: 900;
-            box-shadow: 
-                0 10px 20px rgba(0,0,0,0.2),
-                3px 3px 6px rgba(255,255,255,0.3) inset,
-                -3px -3px 6px rgba(0,0,0,0.2) inset;
-        }
+#bingoCard td.free-cell {
+    background-color: var(--primary-color);
+    color: white;
+    cursor: default;
+    font-size: 1.2rem; /* Added font size reduction */
+    font-weight: 900;
+    box-shadow: 
+        0 10px 20px rgba(0,0,0,0.2),
+        3px 3px 6px rgba(255,255,255,0.3) inset,
+        -3px -3px 6px rgba(0,0,0,0.2) inset;
+}
 
         @media (max-width: 480px) {
             .container {

@@ -96,6 +96,13 @@ function createBoard() {
                             cell.classList.add('highlighted');
                         }
                     }
+					else if (index === 1) {
+                        // Second Prize layout: highlight center column
+                        const centerColumnIndexes = [0, 4, 6, 8, 12, 16, 18, 20, 24];
+                        if (centerColumnIndexes.includes(i)) {
+                            cell.classList.add('highlighted');
+                        }
+                    }					
                     
                     // Free space
                     cell.textContent = i === 12 ? 'FREE' : '';
