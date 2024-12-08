@@ -1,3 +1,4 @@
+
     (function () {
         const SESSION_KEY = 'mishail-bingo-session';
         const HEARTBEAT_KEY = 'mishail-bingo-heartbeat';
@@ -103,9 +104,25 @@
         });
     })();
 
+	const chimeSound = document.getElementById('chimeSound');
+	
     const socket = io();
     let playerName = '';
     let currentPlayerName = '';
+	  socket.on('displayCalledNumber', (number) => {
+	  if (number >= 1 && number <= 15) {
+    document.getElementById('calledNumber').textContent = `B ${number}`;
+  } else if (number >= 16 && number <= 30) {
+    document.getElementById('calledNumber').textContent = `I ${number}`;
+  } else if (number >= 31 && number <= 45) {
+    document.getElementById('calledNumber').textContent = `N ${number}`;
+  } else if (number >= 46 && number <= 60) {
+    document.getElementById('calledNumber').textContent = `G ${number}`;
+  } else if (number >= 61 && number <= 75) {
+    document.getElementById('calledNumber').textContent = `O ${number}`;
+  }
+  chimeSound.play();
+  });
 
     function generateCard() {
         currentPlayerName = document.getElementById('playerName').value;
@@ -163,7 +180,7 @@
                 } else {
                     cell.onclick = function () {
                         this.classList.toggle('marked');
-                        sendMarkedNumber(card[i][j], playerName);
+                        markNumber(card[i][j], playerName);
                     };
                 }
             }
@@ -179,6 +196,6 @@
         });
     }
 
-    function sendMarkedNumber(number, playerName) {
+    function markNumber(number, playerName) {
         socket.emit('markNumber', { playerName, number });
     }

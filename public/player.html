@@ -5,21 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mishail Bingo</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="style1.css">
+	<link rel="stylesheet" href="style1.css">	
 </head>
 <body>
-    <div class="container">
-        <h1>Mishail Bingo</h1>
-        <div class="input-group" id="loginSection">
-            <input type="text" id="playerName" placeholder="Enter your name">
-            <button onclick="generateCard()">Generate Card & Login</button>
-        </div>
-        <div id="playerNameDisplay" class="player-name"></div>
-        <table id="bingoCard"></table>
+ <div class="container">
+    <h1>Mishail Bingo</h1>
+    <div id="calledNumberContainer">
+      <span id="calledNumber"></span>
     </div>
-
+    <div class="input-group" id="loginSection">
+      <input type="text" id="playerName" placeholder="Enter your name">
+      <button onclick="generateCard()">Generate Card & Login</button>
+    </div>
+    <div id="playerNameDisplay" class="player-name"></div>
+    <table id="bingoCard"></table>
+  </div>
+<audio id="chimeSound" src="/chime.mp3"></audio>
 <script src="/socket.io/socket.io.js"></script>
 <script src="script1.js"></script>
+
 
 </body>
 </html>

@@ -1,4 +1,3 @@
-	
 	    // Add event listener for the Enter key on the password input
     document.getElementById('password-input').addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
@@ -256,6 +255,7 @@ function undoNumber(number) {
             lastCalledCell = cell;
             updateCalledNumbers(`${letter} ${number}`);
             speakNumber(`${letter}. ${number}`);
+			 socket.emit('numberCalled', number);
         }
 
         let isGenerating = false;

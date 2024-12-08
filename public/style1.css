@@ -160,3 +160,34 @@
                 font-size: 1.5rem;
             }
         }
+ #calledNumberContainer  {
+            width: 115px;
+            height: 115px;
+			margin-bottom: 20px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500 70%, #b22222);
+            font-weight: bold;
+            color: white;
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset -5px -5px 10px rgba(255, 255, 255, 0.5), inset 5px 5px 15px rgba(0, 0, 0, 0.3), 0 8px 15px rgba(0, 0, 0, 0.4);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+			
+        }	
+
+
+  #calledNumber {
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
