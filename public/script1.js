@@ -1,23 +1,17 @@
-// Hybrid approach supporting both methods
+const chimeSound = new Howl({
+  src: ['/chime.mp3'],
+  volume: 0.5
+});
+
 function playChime() {
-    // Try HTML5 Audio first
-    const htmlAudio = document.getElementById('chimeSound');
-    if (htmlAudio) {
-        htmlAudio.play().catch(error => {
-            // If HTML5 audio fails, try Web Audio API
-            if (audioContext && audioBuffer) {
-                const source = audioContext.createBufferSource();
-                source.buffer = audioBuffer;
-                source.connect(audioContext.destination);
-                source.start(0);
-            }
-        });
-    }
+  chimeSound.play();
 }
+
 	
     const socket = io();
     let playerName = '';
     let currentPlayerName = '';
+	let soundEnabled = false;
 	  socket.on('displayCalledNumber', (number) => {
 	  if (number >= 1 && number <= 15) {
     document.getElementById('calledNumber').textContent = `B ${number}`;
@@ -44,7 +38,7 @@ function playChime() {
         }
     });
 	
-  playChime();
+    chimeSound.play();
   
   });
 
@@ -56,7 +50,9 @@ function playChime() {
             alert('Please enter your name');
             return;
         }
-
+		
+		soundEnabled = true;
+		chimeSound.play();
         // Remove login section and display player name
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('playerNameDisplay').textContent = `${playerName}'s Bingo Card`;
@@ -118,6 +114,7 @@ function playChime() {
             },
             body: JSON.stringify({ playerName, card }),
         });
+
     }
 
     function markNumber(number, playerName) {
