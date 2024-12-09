@@ -1,6 +1,7 @@
 	        :root {
             --primary-color: #3b82f6;
             --secondary-color: #10b981;
+			--third-color: #E11D48;
             --background-color: #f0f4f8; /* Slightly modified background */
             --card-bg: #f1f5f9; /* Off-white card background */
             --cell-background: #ffffff; /* Keep cells white */
@@ -203,8 +204,8 @@
     }
     50% { 
         transform: scale(2.1); /* Makes the cell 20% wider */
-        background-color: var(--secondary-color);
-        border-color: var(--secondary-color);
+        background-color: var(--third-color);
+        border-color: var(--third-color);
     }
 }
 
