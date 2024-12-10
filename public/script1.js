@@ -1,46 +1,48 @@
-const chimeSound = new Howl({
-  src: ['/chime.mp3'],
-  volume: 0.5
-});
+    const chimeSound = new Howl({
+        src: ['/chime.mp3'],
+        volume: 0.5
+    });
 
-function playChime() {
-  chimeSound.play();
-}
-
+    function playChime() {
+        // Check if chime is enabled before playing
+        const chimeToggle = document.getElementById('chimeToggle');
+        if (chimeToggle.checked) {
+            chimeSound.play();
+        }
+    }
 	
     const socket = io();
     let playerName = '';
     let currentPlayerName = '';
-	let soundEnabled = false;
-	  socket.on('displayCalledNumber', (number) => {
-	  if (number >= 1 && number <= 15) {
-    document.getElementById('calledNumber').textContent = `B ${number}`;
-  } else if (number >= 16 && number <= 30) {
-    document.getElementById('calledNumber').textContent = `I ${number}`;
-  } else if (number >= 31 && number <= 45) {
-    document.getElementById('calledNumber').textContent = `N ${number}`;
-  } else if (number >= 46 && number <= 60) {
-    document.getElementById('calledNumber').textContent = `G ${number}`;
-  } else if (number >= 61 && number <= 75) {
-    document.getElementById('calledNumber').textContent = `O ${number}`;
-  }
-  
-    // Find and flash matching cells
-    const cells = document.querySelectorAll('#bingoCard td');
-    cells.forEach(cell => {
-        if (parseInt(cell.textContent) === number) {
-            cell.classList.add('matched');
-            
-            // Remove the matched class after animation completes
-            setTimeout(() => {
-                cell.classList.remove('matched');
-            }, 1000);
+
+    socket.on('displayCalledNumber', (number) => {
+        if (number >= 1 && number <= 15) {
+            document.getElementById('calledNumber').textContent = `B ${number}`;
+        } else if (number >= 16 && number <= 30) {
+            document.getElementById('calledNumber').textContent = `I ${number}`;
+        } else if (number >= 31 && number <= 45) {
+            document.getElementById('calledNumber').textContent = `N ${number}`;
+        } else if (number >= 46 && number <= 60) {
+            document.getElementById('calledNumber').textContent = `G ${number}`;
+        } else if (number >= 61 && number <= 75) {
+            document.getElementById('calledNumber').textContent = `O ${number}`;
         }
-    });
-	
-    chimeSound.play();
   
-  });
+        // Find and flash matching cells
+        const cells = document.querySelectorAll('#bingoCard td');
+        cells.forEach(cell => {
+            if (parseInt(cell.textContent) === number) {
+                cell.classList.add('matched');
+                
+                // Remove the matched class after animation completes
+                setTimeout(() => {
+                    cell.classList.remove('matched');
+                }, 1000);
+            }
+        });
+	
+        playChime();
+    });
 
     function generateCard() {
         currentPlayerName = document.getElementById('playerName').value;
@@ -51,8 +53,13 @@ function playChime() {
             return;
         }
 		
-		soundEnabled = true;
-		chimeSound.play();
+        // Play chime if enabled
+        chimeSound.play();
+
+        // Show chime toggle
+        const chimeToggleContainer = document.getElementById('chimeToggleContainer');
+        chimeToggleContainer.classList.add('visible');
+
         // Remove login section and display player name
         document.getElementById('loginSection').style.display = 'none';
         document.getElementById('playerNameDisplay').textContent = `${playerName}'s Bingo Card`;
@@ -114,43 +121,38 @@ function playChime() {
             },
             body: JSON.stringify({ playerName, card }),
         });
-
     }
 
     function markNumber(number, playerName) {
         socket.emit('markNumber', { playerName, number });
     }
-//==============================================================
- // Absolutely prevent page reload
+
+    // Prevent page reload
+    history.pushState(null, null, location.href);
+    window.addEventListener('popstate', function() {
         history.pushState(null, null, location.href);
-        window.addEventListener('popstate', function() {
-            history.pushState(null, null, location.href);
-        });
+    });
 
-        // Comprehensive reload prevention
-        window.addEventListener('beforeunload', function(e) {
-            e.preventDefault(); // Prevent default browser behavior
-            e.returnValue = ''; // Required for Chrome
-            return ''; // For other browsers
-        });
+    window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    });
 
-        // Prevent page reload via multiple methods
-        window.onbeforeunload = function(e) {
-            e.preventDefault(); // Prevent default browser behavior
-            return false; // Explicitly prevent reload
-        };
+    window.onbeforeunload = function(e) {
+        e.preventDefault();
+        return false;
+    };
        
-        // Disable context menu and selection to prevent accidental actions
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
+    // Disable context menu and selection
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
 
-        document.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-        });
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+    });
 
-        // Additional safeguard for browser history manipulation
-        window.addEventListener('unload', function(e) {
-            e.preventDefault();
-        });
-//==============================================================	
+    window.addEventListener('unload', function(e) {
+        e.preventDefault();
+    });

@@ -10,8 +10,14 @@
 <body>
  <div class="container">
     <h1>Mishail Bingo</h1>
-    <div id="calledNumberContainer">
-      <span id="calledNumber"></span>
+    <div class="called-number-container">
+        <div class="chime-toggle" id="chimeToggleContainer">
+            <input type="checkbox" id="chimeToggle" checked>
+            <label for="chimeToggle">Play Chime</label>
+        </div>
+        <div id="calledNumberContainer">
+          <span id="calledNumber"></span>
+        </div>
     </div>
     <div class="input-group" id="loginSection">
       <input type="text" id="playerName" placeholder="Enter your name">

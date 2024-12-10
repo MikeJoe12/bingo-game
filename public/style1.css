@@ -1,10 +1,10 @@
-	        :root {
+        :root {
             --primary-color: #3b82f6;
             --secondary-color: #10b981;
-			--third-color: #E11D48;
-            --background-color: #f0f4f8; /* Slightly modified background */
-            --card-bg: #f1f5f9; /* Off-white card background */
-            --cell-background: #ffffff; /* Keep cells white */
+            --third-color: #E11D48;
+            --background-color: #f0f4f8;
+            --card-bg: #f1f5f9;
+            --cell-background: #ffffff;
             --text-color: #1f2937;
         }
 
@@ -55,27 +55,52 @@
         }
 
         .input-group {
-			flex-direction: column; /* Stack input and button vertically */
-			align-items: center; /* Center align the items */
+            flex-direction: column;
+            align-items: center;
         }
 
-        input {
-    width: 100%; /* Full width */
-    max-width: 300px; /* Set a max width */
-    margin-bottom: 10px; /* Spacing */
-    padding: 16px 15px; /* Increase padding for height */
-    font-size: 1.2rem; /* Slightly larger text size */
-    border: 2px solid var(--primary-color);
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    background-color: white;
+        input[type="text"] {
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 10px;
+            padding: 16px 15px;
+            font-size: 1.2rem;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: white;
         }
 
-        input:focus {
+        input[type="text"]:focus {
             outline: none;
             border-color: var(--secondary-color);
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2), 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .called-number-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .chime-toggle {
+            position: absolute;
+            left: -5px;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .chime-toggle.visible {
+            opacity: 1;
+        }
+
+        .chime-toggle input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
         }
 
         button {
@@ -87,18 +112,36 @@
             font-weight: 600;
             transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-			width: 100%; /* Same width as input */
-			max-width: 300px; /* Match max width */
-			font-size: 1rem; /* Consistent size */
-			padding: 12px; /* Ensure consistent padding */
+            width: 100%;
+            max-width: 300px;
+            font-size: 1rem;
+            padding: 12px;
         }
 
+        #calledNumberContainer {
+            width: 140px;
+            height: 140px;
+            margin-bottom: 20px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500 70%, #b22222);
+            font-weight: bold;
+            color: white;
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset -5px -5px 10px rgba(255, 255, 255, 0.5), inset 5px 5px 15px rgba(0, 0, 0, 0.3), 0 8px 15px rgba(0, 0, 0, 0.4);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
         #bingoCard {
             width: 110%;
             table-layout: fixed;
             border-collapse: separate;
             border-spacing: 5px;
+			margin-left: -25px;
         }
 
         #bingoCard th {
@@ -114,41 +157,41 @@
         }
 
         #bingoCard td {
-    background-color: var(--cell-background);
-    border-radius: 8px;
-    height: 80px;
-    width: 30%;
-    font-size: 2rem;
-    font-weight: 900;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    vertical-align: middle;
-        box-shadow: 
-        0 10px 20px rgba(0,0,0,0.2),
-        3px 3px 6px rgba(255,255,255,0.3) inset,
-        -3px -3px 6px rgba(0,0,0,0.2) inset;
-    border: 2px solid var(--primary-color); /* Updated border */
-}
+            background-color: var(--cell-background);
+            border-radius: 8px;
+            height: 80px;
+            width: 30%;
+            font-size: 2rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            vertical-align: middle;
+            box-shadow: 
+                0 10px 20px rgba(0,0,0,0.2),
+                3px 3px 6px rgba(255,255,255,0.3) inset,
+                -3px -3px 6px rgba(0,0,0,0.2) inset;
+            border: 2px solid var(--primary-color);
+        }
 
-#bingoCard td.marked {
-    background-color: var(--secondary-color);
-    color: white;
-    font-weight: bold;
-    border-color: var(--secondary-color); /* Matching border color when marked */
-}
+        #bingoCard td.marked {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: bold;
+            border-color: var(--secondary-color);
+        }
 
-#bingoCard td.free-cell {
-    background-color: var(--primary-color);
-    color: white;
-    cursor: default;
-    font-size: 1.2rem; /* Added font size reduction */
-    font-weight: 900;
-    box-shadow: 
-        0 10px 20px rgba(0,0,0,0.2),
-        3px 3px 6px rgba(255,255,255,0.3) inset,
-        -3px -3px 6px rgba(0,0,0,0.2) inset;
-}
+        #bingoCard td.free-cell {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: default;
+            font-size: 1.2rem;
+            font-weight: 900;
+            box-shadow: 
+                0 10px 20px rgba(0,0,0,0.2),
+                3px 3px 6px rgba(255,255,255,0.3) inset,
+                -3px -3px 6px rgba(0,0,0,0.2) inset;
+        }
 
         @media (max-width: 480px) {
             .container {
@@ -157,60 +200,29 @@
 
             #bingoCard td {
                 height: 60px;
-                font-size: 1.7rem;  /* Adjusted for mobile */
+                font-size: 1.7rem;
             }
 
             #bingoCard th {
                 font-size: 1.5rem;
             }
         }
- #calledNumberContainer  {
-            width: 115px;
-            height: 115px;
-			margin-bottom: 20px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500 70%, #b22222);
-            font-weight: bold;
+
+        @keyframes cellFlash {
+            0%, 100% { 
+                transform: scale(1);
+                background-color: var(--cell-background);
+                border-color: var(--primary-color);
+            }
+            50% { 
+                transform: scale(2.1);
+                background-color: var(--third-color);
+                border-color: var(--third-color);
+            }
+        }
+
+        #bingoCard td.matched {
+            animation: cellFlash 1s ease-in-out;
             color: white;
-            font-size: clamp(1.5rem, 5vw, 3rem);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset -5px -5px 10px rgba(255, 255, 255, 0.5), inset 5px 5px 15px rgba(0, 0, 0, 0.3), 0 8px 15px rgba(0, 0, 0, 0.4);
-            text-overflow: ellipsis;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-			
-        }	
-
-
-  #calledNumber {
-    color: white;
-    font-size: 40px;
-    font-weight: bold;
-  }
-
-  .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  @keyframes cellFlash {
-    0%, 100% { 
-        transform: scale(1);
-        background-color: var(--cell-background);
-        border-color: var(--primary-color);
-    }
-    50% { 
-        transform: scale(2.1); /* Makes the cell 20% wider */
-        background-color: var(--third-color);
-        border-color: var(--third-color);
-    }
-}
-
-#bingoCard td.matched {
-    animation: cellFlash 1s ease-in-out;
-    color: white;
-    font-weight: bold;
-}
+            font-weight: bold;
+        }
