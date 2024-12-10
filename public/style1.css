@@ -119,8 +119,8 @@
         }
 
         #calledNumberContainer {
-            width: 140px;
-            height: 140px;
+            width: 120px;
+            height: 120px;
             margin-bottom: 20px;
             border-radius: 50%;
             background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500 70%, #b22222);
@@ -141,7 +141,7 @@
             table-layout: fixed;
             border-collapse: separate;
             border-spacing: 5px;
-			margin-left: -25px;
+			margin-left: -15px;
         }
 
         #bingoCard th {
