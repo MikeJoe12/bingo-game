@@ -33,6 +33,13 @@
         cells.forEach(cell => {
             if (parseInt(cell.textContent) === number) {
                 cell.classList.add('matched');
+
+            // Automatically mark if auto toggle is checked
+            const autoToggle = document.getElementById('autoToggle');
+            if (autoToggle.checked) {
+                cell.classList.add('marked');
+                markNumber(number, playerName); // Send marked number to the server
+            }
                 
                 // Remove the matched class after animation completes
                 setTimeout(() => {
@@ -43,6 +50,31 @@
 	
         playChime();
     });
+//======================================
+// Function to disable/enable all table cells based on the autoToggle state
+function toggleCells(disable) {
+    const cells = document.querySelectorAll('#bingoCard td');
+    cells.forEach(cell => {
+        if (disable) {
+            cell.onclick = null; // Disable cell click
+
+        } else {
+            // Enable cell click
+            cell.onclick = function () {
+                this.classList.toggle('marked');
+                markNumber(this.textContent, playerName);
+            };
+        }
+    });
+}
+
+// Add an event listener for the autoToggle checkbox change
+const autoToggle = document.getElementById('autoToggle');
+autoToggle.addEventListener('change', function() {
+    toggleCells(autoToggle.checked); // Disable or enable cells based on checkbox
+});
+//======================================
+
 
     function generateCard() {
         currentPlayerName = document.getElementById('playerName').value;
@@ -59,6 +91,9 @@
         // Show chime toggle
         const chimeToggleContainer = document.getElementById('chimeToggleContainer');
         chimeToggleContainer.classList.add('visible');
+		
+		const autoToggleContainer = document.getElementById('autoToggleContainer');
+        autoToggleContainer.classList.add('visible');
 
         // Remove login section and display player name
         document.getElementById('loginSection').style.display = 'none';
