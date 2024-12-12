@@ -85,7 +85,7 @@
             position: relative;
         }
 
-		.chime-toggle {
+        .chime-toggle {
             position: absolute;
             left: -5px;
             display: flex;
@@ -93,7 +93,6 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-
 
         .chime-toggle.visible {
             opacity: 1;
@@ -103,11 +102,7 @@
             margin-right: 10px;
             width: auto;
         }
-		#autoToggleContainer {
-    margin-bottom: 65px; /* Adjust this value to control spacing */
-}
 
-		
         button {
             background-color: var(--primary-color);
             color: white;
