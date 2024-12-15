@@ -1,4 +1,4 @@
-	    // Add event listener for the Enter key on the password input
+		    // Add event listener for the Enter key on the password input
     document.getElementById('password-input').addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
             authenticateUser();  // Call authenticateUser if Enter is pressed
@@ -123,17 +123,39 @@ const layoutTitles = document.querySelectorAll('.bingo-layout-title');
 layoutTitles.forEach((title) => {
     title.addEventListener('click', () => {
         const layoutContainer = title.closest('.bingo-layout-container');
-        layoutContainer.classList.toggle('disabled');
-        title.classList.toggle('disabled');
+        const isDisabled = layoutContainer.classList.toggle('disabled');
+        title.classList.toggle('disabled', isDisabled);
 
-        // Check if layout is disabled
-        if (layoutContainer.classList.contains('disabled')) {
+        // Check if layout is disabled and update UI
+        if (isDisabled) {
             createWinnerInput(layoutContainer);
         } else {
             removeWinnerDisplay(layoutContainer);
         }
+
+        // Send updated layouts to the server
+        const updatedLayouts = {
+            layout1: {
+                title: document.querySelector('#layoutTitle1').textContent,
+                layoutHTML: document.querySelector('#layout1').innerHTML,
+                disabled: document.getElementById('layoutContainer1').classList.contains('disabled'),
+            },
+            layout2: {
+                title: document.querySelector('#layoutTitle2').textContent,
+                layoutHTML: document.querySelector('#layout2').innerHTML,
+                disabled: document.getElementById('layoutContainer2').classList.contains('disabled'),
+            },
+            layout3: {
+                title: document.querySelector('#layoutTitle3').textContent,
+                layoutHTML: document.querySelector('#layout3').innerHTML,
+                disabled: document.getElementById('layoutContainer3').classList.contains('disabled'),
+            },
+        };
+
+        socket.emit('updateLayouts', updatedLayouts);
     });
 });
+
 }
 function createWinnerInput(layoutContainer) {
     // Create an input box if it doesn't exist for this layout
@@ -537,3 +559,31 @@ const enableDataCheckbox = document.getElementById('enableDataCheckbox');
         socket.on('numberMarked', ({ playerName, number }) => {
             updatePlayerCard(playerName, number);
         });
+		
+		function sendLayoutsToServer() {
+    const updatedLayouts = {
+        layout1: {
+            title: document.querySelector('#layoutTitle1').textContent,
+            layoutHTML: document.querySelector('#layout1').innerHTML,
+        },
+        layout2: {
+            title: document.querySelector('#layoutTitle2').textContent,
+            layoutHTML: document.querySelector('#layout2').innerHTML,
+        },
+        layout3: {
+            title: document.querySelector('#layoutTitle3').textContent,
+            layoutHTML: document.querySelector('#layout3').innerHTML,
+        },
+    };
+
+    socket.emit('updateLayouts', updatedLayouts);
+}
+
+// Call sendLayoutsToServer whenever layouts or titles are modified
+document.querySelectorAll('.bingo-layout-container').forEach(container => {
+    container.addEventListener('click', sendLayoutsToServer); // Detect changes in layouts
+});
+
+document.querySelectorAll('.bingo-layout-title').forEach(title => {
+    title.addEventListener('input', sendLayoutsToServer); // Detect changes in titles
+});

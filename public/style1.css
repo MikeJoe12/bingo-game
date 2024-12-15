@@ -1,4 +1,4 @@
-        :root {
+	        :root {
             --primary-color: #3b82f6;
             --secondary-color: #10b981;
             --third-color: #E11D48;
@@ -7,6 +7,19 @@
             --cell-background: #ffffff;
             --text-color: #1f2937;
         }
+/* Page Title */
+.page-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 20px;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Ensure it spans the full width */
+    position: absolute; /* Position it at the top of the page */
+    top: 20px; /* Adjust spacing from the top */
+}
+
 
         * {
             margin: 0;
@@ -48,7 +61,7 @@
 
         .player-name {
             font-size: 1.5rem;
-            color: var(--primary-color);
+            color: black;
             margin-bottom: 15px;
             font-weight: 600;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
@@ -79,11 +92,12 @@
         }
 
         .called-number-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    margin-top: 20px;
+}
 
         .chime-toggle {
             position: absolute;
@@ -92,6 +106,7 @@
             align-items: center;
             opacity: 0;
             transition: opacity 0.3s ease;
+			margin-top: 150px;
         }
 
         .chime-toggle.visible {
@@ -226,3 +241,86 @@
             color: white;
             font-weight: bold;
         }
+		.bingo-layout-container {
+    margin: 20px;
+}
+
+/* Main container for layout */
+.main-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Called number section */
+.called-number-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+/* Bingo Layouts Section */
+.bingo-layouts {
+    display: flex;
+    flex-direction: row; /* Align tables next to each other */
+    gap: -80px; /* Reduced space between tables */
+    justify-content: center;
+    margin-bottom: 10px; /* Reduced space below the tables */
+}
+
+/* Bingo Layout Container */
+.bingo-layout-container {
+    text-align: center;
+    margin-bottom: 0; /* Remove extra space between containers */
+}
+
+/* Bingo Layout Title */
+.bingo-layout-title {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 3px; /* Reduce space below titles */
+}
+
+/* Resize Bingo Layouts */
+.bingo-layout {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0px; /* Minimal gap between cells */
+    width: 70px; /* Compact size for tables */
+    height: auto;
+}
+
+/* Resize Cells */
+.bingo-layout-cell {
+    width: 12px;
+    height: 12px;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 1px;
+    transition: background-color 0.3s;
+}
+
+.bingo-layout-cell.highlighted {
+    background-color: #ff6347; /* Highlighted color */
+    color: white;
+    font-size: 0.0rem; /* Ensure no visible text */
+}
+
+.bingo-layout-container.disabled .bingo-layout-cell {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+.bingo-layout-title.disabled {
+    color: #888;
+    text-decoration: line-through;
+}

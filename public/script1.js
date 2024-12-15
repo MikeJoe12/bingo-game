@@ -1,3 +1,15 @@
+// Function to generate 25 table cells dynamically
+function generateTableCells() {
+    let cells = '';
+    for (let i = 0; i < 25; i++) {
+        cells += `<div class="bingo-layout-cell"></div>`;
+    }
+    return cells;
+}
+
+
+
+
     const chimeSound = new Howl({
         src: ['/chime.mp3'],
         volume: 0.5
@@ -43,6 +55,50 @@
 	
         playChime();
     });
+	
+socket.on('layoutsUpdate', (layoutsData) => {
+    console.log('Received layoutsUpdate:', layoutsData); // Debugging
+
+    Object.keys(layoutsData).forEach((key, index) => {
+        const layoutData = layoutsData[key];
+        const layoutContainerId = `layoutContainer${index + 1}`;
+        const layoutContainer = document.getElementById(layoutContainerId);
+
+        // Create the layout container if it doesn't exist
+        if (!layoutContainer) {
+            const newContainer = document.createElement('div');
+            newContainer.id = layoutContainerId;
+            newContainer.className = 'bingo-layout-container';
+            newContainer.innerHTML = `
+                <div id="layoutTitle${index + 1}" class="bingo-layout-title">${layoutData.title || ''}</div>
+                <div id="layout${index + 1}" class="bingo-layout">${layoutData.layoutHTML}</div>
+            `;
+            document.getElementById('bingo-layouts').appendChild(newContainer);
+        } else {
+            // Update existing layout container
+            const titleElement = layoutContainer.querySelector(`#layoutTitle${index + 1}`);
+            const layoutElement = layoutContainer.querySelector(`#layout${index + 1}`);
+
+            if (titleElement) titleElement.textContent = layoutData.title || '';
+            if (layoutElement) layoutElement.innerHTML = layoutData.layoutHTML;
+        }
+
+        // Apply or remove the 'disabled' class
+        const container = document.getElementById(layoutContainerId);
+        if (layoutData.disabled) {
+            container.classList.add('disabled');
+            container.querySelector('.bingo-layout-title').classList.add('disabled');
+        } else {
+            container.classList.remove('disabled');
+            container.querySelector('.bingo-layout-title').classList.remove('disabled');
+        }
+    });
+});
+
+
+
+
+
 
     function generateCard() {
         currentPlayerName = document.getElementById('playerName').value;

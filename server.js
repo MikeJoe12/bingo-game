@@ -15,6 +15,11 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 let playerCards = [];
+let layoutsData = {
+  layout1: { title: "Third Prize", layoutHTML: "", disabled: false  },
+  layout2: { title: "Second Prize", layoutHTML: "", disabled: false  },
+  layout3: { title: "First Prize", layoutHTML: "", disabled: false  },
+};   
 
 io.on('connection', (socket) => {
   socket.on('markNumber', ({ playerName, number }) => {
@@ -25,7 +30,27 @@ io.on('connection', (socket) => {
   socket.on('numberCalled', (number) => {
     io.emit('displayCalledNumber', number);
   });
-});								 
+  socket.emit('layoutsUpdate', layoutsData);
+
+  // Update layouts and titles from index.html
+socket.on('updateLayouts', (updatedData) => {
+    // Merge updatedData into layoutsData
+    Object.keys(updatedData).forEach((key) => {
+        if (layoutsData[key]) {
+            layoutsData[key] = {
+                ...layoutsData[key], // Preserve existing properties
+                ...updatedData[key], // Overwrite with updated properties
+            };
+        }
+    });
+
+    //console.log('Updated layoutsData:', layoutsData); // Debugging
+
+    // Broadcast the updated layouts to all connected clients
+    io.emit('layoutsUpdate', layoutsData);
+});
+
+});
 app.post('/saveCard', (req, res) => {
     const { playerName, card } = req.body;
     playerCards.push({ playerName, card });

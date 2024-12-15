@@ -8,15 +8,37 @@
 	<link rel="stylesheet" href="style1.css">	
 </head>
 <body>
+<h1 class="page-title">Mishail Bingo</h1>
  <div class="container">
-    <h1>Mishail Bingo</h1>
-    <div class="called-number-container">
-        <div class="chime-toggle" id="chimeToggleContainer">
+      <div class="called-number-container">
+        
+        
+<div id="bingo-layouts" class="bingo-layouts">
+    <!-- Third Prize -->
+    <div class="bingo-layout-container" id="layoutContainer1">
+        <div id="layoutTitle1" class="bingo-layout-title">3rd Prize</div>
+        <div id="layout1" class="bingo-layout">${generateTableCells()}</div>
+    </div>
+    <!-- Second Prize -->
+    <div class="bingo-layout-container" id="layoutContainer2">
+        <div id="layoutTitle2" class="bingo-layout-title">2nd Prize</div>
+        <div id="layout2" class="bingo-layout">${generateTableCells()}</div>
+    </div>
+    <!-- First Prize -->
+    <div class="bingo-layout-container" id="layoutContainer3">
+        <div id="layoutTitle3" class="bingo-layout-title">1st Prize</div>
+        <div id="layout3" class="bingo-layout">${generateTableCells()}</div>
+    </div>
+</div>
+
+
+
+		<div id="calledNumberContainer">
+          <span id="calledNumber"></span>
+        </div>
+				<div class="chime-toggle" id="chimeToggleContainer">
             <input type="checkbox" id="chimeToggle" checked>
             <label for="chimeToggle">Sound</label>
-        </div>
-        <div id="calledNumberContainer">
-          <span id="calledNumber"></span>
         </div>
     </div>
     <div class="input-group" id="loginSection">
@@ -26,6 +48,9 @@
     <div id="playerNameDisplay" class="player-name"></div>
     <table id="bingoCard"></table>
   </div>
+
+
+
 <audio id="chimeSound" src="/chime.mp3"></audio>
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
