@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mishail Bingo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<style>
+	        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #10b981;
+            --third-color: #E11D48;
+            --background-color: #f0f4f8;
+            --card-bg: #f1f5f9;
+            --cell-background: #ffffff;
+            --text-color: #1f2937;
+        }
+/* Page Title */
+.page-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 20px;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Ensure it spans the full width */
+    position: absolute; /* Position it at the top of the page */
+    top: 20px; /* Adjust spacing from the top */
+}
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e6eaf0 100%);
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.1), 
+                0 5px 15px rgba(0,0,0,0.05);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 2.5rem;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .player-name {
+            font-size: 1.5rem;
+            color: black;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 10px;
+            padding: 16px 15px;
+            font-size: 1.2rem;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2), 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .called-number-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    margin-top: 20px;
+}
+
+        .chime-toggle {
+            position: absolute;
+            left: -5px;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+			margin-top: 150px;
+        }
+
+        .chime-toggle.visible {
+            opacity: 1;
+        }
+
+        .chime-toggle input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+		
+		  .chime-toggle1 {
+            position: absolute;
+            left: -5px;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+			margin-top: 180px;
+        }
+
+        .chime-toggle1.visible {
+            opacity: 1;
+        }
+
+        .chime-toggle1 input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 300px;
+            font-size: 1rem;
+            padding: 12px;
+        }
+
+        #calledNumberContainer {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500 70%, #b22222);
+            font-weight: bold;
+            color: white;
+            font-size: 3rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset -5px -5px 10px rgba(255, 255, 255, 0.5), inset 5px 5px 15px rgba(0, 0, 0, 0.3), 0 8px 15px rgba(0, 0, 0, 0.4);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        #bingoCard {
+            width: 110%;
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 5px;
+			margin-left: -15px;
+        }
+
+        #bingoCard th {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 900;
+            font-size: 2rem;
+            text-transform: uppercase;
+            width: 20%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        #bingoCard td {
+            background-color: var(--cell-background);
+            border-radius: 8px;
+            height: 80px;
+            width: 30%;
+            font-size: 2rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            vertical-align: middle;
+            box-shadow: 
+                0 10px 20px rgba(0,0,0,0.2),
+                3px 3px 6px rgba(255,255,255,0.3) inset,
+                -3px -3px 6px rgba(0,0,0,0.2) inset;
+            border: 2px solid var(--primary-color);
+        }
+
+        #bingoCard td.marked {
+            background-color: var(--secondary-color);
+            color: white;
+            font-weight: bold;
+            border-color: var(--secondary-color);
+        }
+
+        #bingoCard td.free-cell {
+            background-color: var(--primary-color);
+            color: white;
+            cursor: default;
+            font-size: 1.2rem;
+            font-weight: 900;
+            box-shadow: 
+                0 10px 20px rgba(0,0,0,0.2),
+                3px 3px 6px rgba(255,255,255,0.3) inset,
+                -3px -3px 6px rgba(0,0,0,0.2) inset;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+
+            #bingoCard td {
+                height: 60px;
+                font-size: 1.7rem;
+            }
+
+            #bingoCard th {
+                font-size: 1.5rem;
+            }
+        }
+
+        @keyframes cellFlash {
+            0%, 100% { 
+                transform: scale(1);
+                background-color: var(--cell-background);
+                border-color: var(--primary-color);
+            }
+            50% { 
+                transform: scale(2.1);
+                background-color: var(--third-color);
+                border-color: var(--third-color);
+            }
+        }
+
+        #bingoCard td.matched {
+            animation: cellFlash 1s ease-in-out;
+            color: white;
+            font-weight: bold;
+        }
+		.bingo-layout-container {
+    margin: 20px;
+}
+
+/* Main container for layout */
+.main-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Called number section */
+.called-number-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+/* Bingo Layouts Section */
+.bingo-layouts {
+    display: flex;
+    flex-direction: row; /* Align tables next to each other */
+    gap: -80px; /* Reduced space between tables */
+    justify-content: center;
+    margin-bottom: 10px; /* Reduced space below the tables */
+}
+
+/* Bingo Layout Container */
+.bingo-layout-container {
+    text-align: center;
+    margin-bottom: 0; /* Remove extra space between containers */
+}
+
+/* Bingo Layout Title */
+.bingo-layout-title {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 3px; /* Reduce space below titles */
+}
+
+/* Resize Bingo Layouts */
+.bingo-layout {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0px; /* Minimal gap between cells */
+    width: 70px; /* Compact size for tables */
+    height: auto;
+}
+
+/* Resize Cells */
+.bingo-layout-cell {
+    width: 12px;
+    height: 12px;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 1px;
+    transition: background-color 0.3s;
+}
+
+.bingo-layout-cell.highlighted {
+    background-color: #ff6347; /* Highlighted color */
+    color: white;
+    font-size: 0.0rem; /* Ensure no visible text */
+}
+
+.bingo-layout-container.disabled .bingo-layout-cell {
+    background-color: #555;
+    cursor: not-allowed;
+}
+
+.bingo-layout-title.disabled {
+    color: #888;
+    text-decoration: line-through;
+}
+
+
+
+	</style>	
+</head>
+<body>
+<h1 class="page-title">Mishail Bingo</h1>
+ <div class="container">
+      <div class="called-number-container">
+        
+        
+<div id="bingo-layouts" class="bingo-layouts">
+    <!-- Third Prize -->
+    <div class="bingo-layout-container" id="layoutContainer1">
+        <div id="layoutTitle1" class="bingo-layout-title">3rd Prize</div>
+        <div id="layout1" class="bingo-layout">${generateTableCells()}</div>
+    </div>
+    <!-- Second Prize -->
+    <div class="bingo-layout-container" id="layoutContainer2">
+        <div id="layoutTitle2" class="bingo-layout-title">2nd Prize</div>
+        <div id="layout2" class="bingo-layout">${generateTableCells()}</div>
+    </div>
+    <!-- First Prize -->
+    <div class="bingo-layout-container" id="layoutContainer3">
+        <div id="layoutTitle3" class="bingo-layout-title">1st Prize</div>
+        <div id="layout3" class="bingo-layout">${generateTableCells()}</div>
+    </div>
+</div>
+
+
+
+		<div id="calledNumberContainer">
+          <span id="calledNumber"></span>
+        </div>
+		
+		<div class="chime-toggle" id="autoToggleContainer">
+			<input type="checkbox" id="autoToggle">
+			<label for="autoToggle">Auto</label>
+		</div>
+        <div class="chime-toggle1" id="chimeToggleContainer">
+            <input type="checkbox" id="chimeToggle" checked>
+            <label for="chimeToggle">Sound</label>
+        </div>
+		
+    </div>
+    <div class="input-group" id="loginSection">
+      <input type="text" id="playerName" placeholder="Enter your name">
+      <button onclick="generateCard()">Generate Card & Login</button>
+    </div>
+    <div id="playerNameDisplay" class="player-name"></div>
+    <table id="bingoCard"></table>
+  </div>
+
+
+
+<audio id="chimeSound" src="/chime.mp3"></audio>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+<script>
+// Function to generate 25 table cells dynamically
+function generateTableCells() {
+    let cells = '';
+    for (let i = 0; i < 25; i++) {
+        cells += `<div class="bingo-layout-cell"></div>`;
+    }
+    return cells;
+}
+
+
+
+
+    const chimeSound = new Howl({
+        src: ['/chime.mp3'],
+        volume: 0.5
+    });
+
+    function playChime() {
+        // Check if chime is enabled before playing
+        const chimeToggle = document.getElementById('chimeToggle');
+        if (chimeToggle.checked) {
+            chimeSound.play();
+        }
+    }
+	
+    const socket = io();
+    let playerName = '';
+    let currentPlayerName = '';
+
+    socket.on('displayCalledNumber', (number) => {
+        if (number >= 1 && number <= 15) {
+            document.getElementById('calledNumber').textContent = `B ${number}`;
+        } else if (number >= 16 && number <= 30) {
+            document.getElementById('calledNumber').textContent = `I ${number}`;
+        } else if (number >= 31 && number <= 45) {
+            document.getElementById('calledNumber').textContent = `N ${number}`;
+        } else if (number >= 46 && number <= 60) {
+            document.getElementById('calledNumber').textContent = `G ${number}`;
+        } else if (number >= 61 && number <= 75) {
+            document.getElementById('calledNumber').textContent = `O ${number}`;
+        }
+  
+        // Find and flash matching cells
+        const cells = document.querySelectorAll('#bingoCard td');
+        cells.forEach(cell => {
+            if (parseInt(cell.textContent) === number) {
+                cell.classList.add('matched');
+            // Automatically mark if auto toggle is checked
+            const autoToggle = document.getElementById('autoToggle');
+            if (autoToggle.checked) {
+                cell.classList.add('marked');
+                markNumber(number, playerName); // Send marked number to the server
+            }
+			
+                // Remove the matched class after animation completes
+                setTimeout(() => {
+                    cell.classList.remove('matched');
+                }, 1000);
+            }
+        });
+	
+        playChime();
+    });
+
+//======================================
+// Function to disable/enable all table cells based on the autoToggle state
+function toggleCells(disable) {
+    const cells = document.querySelectorAll('#bingoCard td');
+    cells.forEach(cell => {
+        if (disable) {
+            cell.onclick = null; // Disable cell click
+        } else {
+            // Enable cell click
+            cell.onclick = function () {
+                this.classList.toggle('marked');
+                markNumber(this.textContent, playerName);
+            };
+																										 
+        }
+    });
+}
+
+// Add an event listener for the autoToggle checkbox change
+const autoToggle = document.getElementById('autoToggle');
+autoToggle.addEventListener('change', function() {
+    toggleCells(autoToggle.checked); // Disable or enable cells based on checkbox
+});
+//======================================
+	
+socket.on('layoutsUpdate', (layoutsData) => {
+    console.log('Received layoutsUpdate:', layoutsData); // Debugging
+
+    Object.keys(layoutsData).forEach((key, index) => {
+        const layoutData = layoutsData[key];
+        const layoutContainerId = `layoutContainer${index + 1}`;
+        const layoutContainer = document.getElementById(layoutContainerId);
+
+        // Create the layout container if it doesn't exist
+        if (!layoutContainer) {
+            const newContainer = document.createElement('div');
+            newContainer.id = layoutContainerId;
+            newContainer.className = 'bingo-layout-container';
+            newContainer.innerHTML = `
+                <div id="layoutTitle${index + 1}" class="bingo-layout-title">${layoutData.title || ''}</div>
+                <div id="layout${index + 1}" class="bingo-layout">${layoutData.layoutHTML}</div>
+            `;
+            document.getElementById('bingo-layouts').appendChild(newContainer);
+        } else {
+            // Update existing layout container
+            const titleElement = layoutContainer.querySelector(`#layoutTitle${index + 1}`);
+            const layoutElement = layoutContainer.querySelector(`#layout${index + 1}`);
+
+            if (titleElement) titleElement.textContent = layoutData.title || '';
+            if (layoutElement) layoutElement.innerHTML = layoutData.layoutHTML;
+        }
+
+        // Apply or remove the 'disabled' class
+        const container = document.getElementById(layoutContainerId);
+        if (layoutData.disabled) {
+            container.classList.add('disabled');
+            container.querySelector('.bingo-layout-title').classList.add('disabled');
+        } else {
+            container.classList.remove('disabled');
+            container.querySelector('.bingo-layout-title').classList.remove('disabled');
+        }
+    });
+});
+
+
+
+
+
+
+    function generateCard() {
+        currentPlayerName = document.getElementById('playerName').value;
+        playerName = document.getElementById('playerName').value;
+
+        if (!playerName) {
+            alert('Please enter your name');
+            return;
+        }
+		
+        // Play chime if enabled
+        chimeSound.play();
+
+        // Show chime toggle
+        const chimeToggleContainer = document.getElementById('chimeToggleContainer');
+        chimeToggleContainer.classList.add('visible');
+		const autoToggleContainer = document.getElementById('autoToggleContainer');
+        autoToggleContainer.classList.add('visible');		
+		
+
+        // Remove login section and display player name
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('playerNameDisplay').textContent = `${playerName}'s Bingo Card`;
+
+        const card = [];
+        const usedNumbers = new Set();
+        const headers = ['B', 'I', 'N', 'G', 'O'];
+
+        for (let i = 0; i < 5; i++) {
+            const row = [];
+            for (let j = 0; j < 5; j++) {
+                let num;
+                do {
+                    num = Math.floor(Math.random() * 15) + 1 + (j * 15);
+                } while (usedNumbers.has(num));
+                usedNumbers.add(num);
+                row.push(num);
+            }
+            card.push(row);
+        }
+
+        card[2][2] = 'FREE'; // Free space
+
+        const table = document.getElementById('bingoCard');
+        table.innerHTML = '';
+
+        // Add header row
+        const headerRow = table.insertRow();
+        headers.forEach(header => {
+            const th = document.createElement('th');
+            th.textContent = header;
+            headerRow.appendChild(th);
+        });
+
+        for (let i = 0; i < 5; i++) {
+            const row = table.insertRow();
+            for (let j = 0; j < 5; j++) {
+                const cell = row.insertCell();
+                cell.textContent = card[i][j];
+
+                // Special handling for FREE cell
+                if (card[i][j] === 'FREE') {
+                    cell.classList.add('free-cell');
+                    cell.onclick = null; // Disable clicking
+                } else {
+                    cell.onclick = function () {
+                        this.classList.toggle('marked');
+                        markNumber(card[i][j], playerName);
+                    };
+                }
+            }
+        }
+
+        // Send player name and card to the server
+        fetch('/saveCard', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ playerName, card }),
+        });
+    }
+
+    function markNumber(number, playerName) {
+        socket.emit('markNumber', { playerName, number });
+    }
+
+    // Prevent page reload
+    history.pushState(null, null, location.href);
+    window.addEventListener('popstate', function() {
+        history.pushState(null, null, location.href);
+    });
+
+    window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+    });
+
+    window.onbeforeunload = function(e) {
+        e.preventDefault();
+        return false;
+    };
+       
+    // Disable context menu and selection
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+    });
+
+    window.addEventListener('unload', function(e) {
+        e.preventDefault();
+    });
+</script>
+
+</body>
+</html>
