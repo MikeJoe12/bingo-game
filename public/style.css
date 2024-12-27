@@ -483,3 +483,53 @@
         2px 2px 4px rgba(205,127,50,0.7);
     color: #CD7F32;
 }
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(235, 235, 235, 0.95); /* Muted off-white */
+    color: #333; /* Dark text for contrast */
+    padding: 10px 20px;
+    display: flex;
+    justify-content: flex-end; /* Aligns everything to the right */
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.menu-icon {
+    font-size: 1.8rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 40px; /* Prevents overlap with the scrollbar */
+    color: #333; /* Matches the text color */
+}
+
+.menu-items {
+    display: none;
+    flex-direction: column;
+    background-color: rgba(240, 240, 240, 0.95); /* Slightly darker off-white */
+    position: absolute;
+    top: 50px; /* Places the dropdown below the icon */
+    right: 40px; /* Aligns dropdown with the burger icon */
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.menu-items a {
+    text-decoration: none;
+    color: #333; /* Dark text for readability */
+    padding: 10px 20px;
+    display: block;
+    transition: background-color 0.3s;
+	font-weight: bold;
+}
+
+.menu-items a:hover {
+    background-color: rgba(200, 200, 200, 0.9); /* Slight hover effect */
+}
+
+.menu-items.show {
+    display: flex;
+}

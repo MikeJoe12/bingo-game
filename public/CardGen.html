@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo Card Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .bingo-cards-wrapper {
+            display: grid;
+            gap: 20px;
+            justify-content: center;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 8px;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1em;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+        }
+
+        .actions {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        button {
+            padding: 12px 24px;
+            margin: 8px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+            color: white;
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            color: white;
+            box-shadow: 0 4px 6px rgba(74, 85, 104, 0.2);
+        }
+
+        .bingo-card {
+            width: 300px;
+            aspect-ratio: 1;
+            padding: 10px;
+            background-color: white;
+            text-align: center;
+            page-break-inside: avoid;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .bingo-header {
+            color: white;
+            padding: 10px 0;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 0;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .bingo-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            border-width: 2px;
+            border-style: solid;
+            gap: 2px;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .bingo-cell {
+            background-color: white;
+            text-align: center;
+            padding: -15px 0;
+            font-size: 24px;
+            font-weight: bold;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bingo-cell.free {
+            font-size: 16px;
+            background-color: #f7fafc;
+        }
+
+        .page-break {
+            page-break-after: always;
+            margin-bottom: 30px;
+            border-bottom: 2px dashed #e2e8f0;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3182ce;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bingo Card Generator</h1>
+        <form id="bingoForm">
+            <label for="numCards">Number of Cards:</label>
+            <input type="number" id="numCards" name="numCards" min="1" max="100" placeholder="Enter number of cards" required>
+
+            <label for="cardsPerPage">Cards per Page:</label>
+            <select id="cardsPerPage" name="cardsPerPage">
+                <option value="1">1 card per page</option>
+                <option value="2">2 cards per page</option>
+                <option value="4" selected>4 cards per page</option>
+                <option value="6">6 cards per page</option>
+            </select>
+
+            <label for="cardColor">Card Color:</label>
+            <select id="cardColor" name="cardColor">
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+                <option value="purple">Purple</option>
+                <option value="orange">Orange</option>
+            </select>
+
+            <div class="actions">
+                <button type="button" class="btn-primary" onclick="generateMultipleCards()">Generate Bingo Cards</button>
+                <button type="button" class="btn-secondary" onclick="exportToPDF()">Export as PDF</button>
+            </div>
+        </form>
+
+        <div class="bingo-cards-wrapper" id="bingoCardsContainer"></div>
+    </div>
+
+    <div class="loading" id="loading"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        function generateMultipleCards() {
+            const numCards = parseInt(document.getElementById('numCards').value);
+            const cardsPerPage = parseInt(document.getElementById('cardsPerPage').value);
+            const cardColor = document.getElementById('cardColor').value;
+            const container = document.getElementById('bingoCardsContainer');
+            container.innerHTML = '';
+
+            const cardsPerRow = cardsPerPage <= 2 ? cardsPerPage : 2;
+            
+            let currentPage = document.createElement('div');
+            currentPage.style.display = 'grid';
+            currentPage.style.gridTemplateColumns = `repeat(${cardsPerRow}, 1fr)`;
+            currentPage.style.gap = '20px';
+            container.appendChild(currentPage);
+            
+            let cardCount = 0;
+
+            for (let i = 0; i < numCards; i++) {
+                if (cardCount >= cardsPerPage) {
+                    currentPage.classList.add('page-break');
+                    currentPage = document.createElement('div');
+                    currentPage.style.display = 'grid';
+                    currentPage.style.gridTemplateColumns = `repeat(${cardsPerRow}, 1fr)`;
+                    currentPage.style.gap = '20px';
+                    container.appendChild(currentPage);
+                    cardCount = 0;
+                }
+
+                const bingoCard = createBingoCard(cardColor);
+                currentPage.appendChild(bingoCard);
+                cardCount++;
+            }
+        }
+
+        function createBingoCard(cardColor) {
+            const bingoCard = document.createElement('div');
+            bingoCard.className = 'bingo-card';
+
+            const header = document.createElement('div');
+            header.className = 'bingo-header';
+            header.style.backgroundColor = cardColor;
+            ['B', 'I', 'N', 'G', 'O'].forEach(letter => {
+                const cell = document.createElement('div');
+                cell.textContent = letter;
+                header.appendChild(cell);
+            });
+            bingoCard.appendChild(header);
+
+            const grid = document.createElement('div');
+            grid.className = 'bingo-grid';
+            grid.style.backgroundColor = cardColor;
+            grid.style.borderColor = cardColor;
+
+            const columns = {
+                B: generateUniqueNumbers(1, 15, 5),
+                I: generateUniqueNumbers(16, 30, 5),
+                N: generateUniqueNumbers(31, 45, 5),
+                G: generateUniqueNumbers(46, 60, 5),
+                O: generateUniqueNumbers(61, 75, 5)
+            };
+
+            for (let row = 0; row < 5; row++) {
+                ['B', 'I', 'N', 'G', 'O'].forEach((letter) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'bingo-cell';
+                    if (letter === 'N' && row === 2) {
+                        cell.textContent = 'FREE SPACE';
+                        cell.classList.add('free');
+                    } else {
+                        cell.textContent = columns[letter][row];
+                    }
+                    grid.appendChild(cell);
+                });
+            }
+
+            bingoCard.appendChild(grid);
+            return bingoCard;
+        }
+
+        function generateUniqueNumbers(min, max, count) {
+            const numbers = [];
+            while (numbers.length < count) {
+                const num = Math.floor(Math.random() * (max - min + 1)) + min;
+                if (!numbers.includes(num)) {
+                    numbers.push(num);
+                }
+            }
+            return numbers;
+        }
+
+        async function exportToPDF() {
+            const loading = document.getElementById('loading');
+            loading.classList.add('active');
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const cards = document.querySelectorAll('.bingo-card');
+                const cardsPerPage = parseInt(document.getElementById('cardsPerPage').value);
+                
+                const pdf = new jsPDF({
+                    orientation: cardsPerPage > 2 ? 'portrait' : 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                let currentCard = 0;
+
+                const pageMargin = 10;
+                const cardSpacing = 5;
+
+                while (currentCard < cards.length) {
+                    if (currentCard > 0) {
+                        pdf.addPage();
+                    }
+
+                    let cardWidth, cardHeight, cols, rows;
+                    if (cardsPerPage === 1) {
+                        cardWidth = Math.min(pdfWidth - (pageMargin * 2), pdfHeight - (pageMargin * 2));
+                        cardHeight = cardWidth;
+                        const x = (pdfWidth - cardWidth) / 2;
+                        const y = (pdfHeight - cardHeight) / 2;
+
+                        const card = cards[currentCard];
+                        const canvas = await html2canvas(card, {
+                            scale: 2,
+                            backgroundColor: null
+                        });
+                        const imgData = canvas.toDataURL('image/png');
+                        pdf.addImage(imgData, 'PNG', x, y, cardWidth, cardHeight);
+                        currentCard++;
+                    } else {
+                        if (cardsPerPage === 2) {
+                            cols = 2;
+                            rows = 1;
+                            cardWidth = (pdfWidth - (pageMargin * 2) - cardSpacing) / 2;
+                        } else {
+                            cols = 2;
+                            rows = cardsPerPage / 2;
+                            cardWidth = (pdfWidth - (pageMargin * 2) - cardSpacing) / 2;
+                        }
+                        cardHeight = cardWidth;
+
+                        for (let i = 0; i < cardsPerPage && currentCard < cards.length; i++) {
+                            const card = cards[currentCard];
+                            const canvas = await html2canvas(card, {
+                                scale: 2,
+                                backgroundColor: null
+                            });
+                            const imgData = canvas.toDataURL('png');
+                            
+                            const col = i % cols;
+                            const row = Math.floor(i / cols);
+                            const x = pageMargin + (col * (cardWidth + cardSpacing));
+                            const y = pageMargin + (row * (cardHeight + cardSpacing));
+
+                            pdf.addImage(imgData, 'PNG', x, y, cardWidth, cardHeight);
+                            currentCard++;
+                        }
+                    }
+                }
+
+                pdf.save('bingo_cards.pdf');
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,3 +1,7 @@
+	function toggleMenu() {
+    const menu = document.getElementById('menuItems');
+    menu.classList.toggle('show');
+}	
 		    // Add event listener for the Enter key on the password input
     document.getElementById('password-input').addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
