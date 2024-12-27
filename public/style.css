@@ -37,31 +37,33 @@
 
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(to right, #1e3c72, #2a5298);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #fff;
-        }
-        .container {
-            position: relative;
-			display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1vw;
-            padding: 2vw;
-            max-width: 1700px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
-			 min-height: calc(100vh - 50px); /* Ensures stability */
-        }
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to right, #1e3c72, #2a5298);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #fff;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+.container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1vw;
+    padding: 2vw;
+    max-width: 1200px; /* Adjust width to fit content */
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    margin: auto; /* Center the container */
+}
         .top-row {
             display: flex;
             justify-content: space-between;
@@ -110,6 +112,7 @@
             box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3), -4px -4px 8px rgba(255, 255, 255, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             font-weight: bold;
+			margin-top: 20px;
         }
         #generateButton:hover {
             transform: translateY(-4px);
@@ -188,7 +191,7 @@
         #numberInput {
             padding: 10px;
             font-size: 1.5vw;
-            width: 120px;
+            width: 100px;
             text-align: center;
             border-radius: 5px;
             border: none;
@@ -488,15 +491,17 @@
     top: 0;
     left: 0;
     width: 100%;
-    background-color: rgba(235, 235, 235, 0.95); /* Muted off-white */
-    color: #333; /* Dark text for contrast */
-    padding: 10px 20px;
+    background-color: rgba(235, 235, 235, 0.95);
+    color: #333;
+    padding: 5px 10px;
     display: flex;
-    justify-content: flex-end; /* Aligns everything to the right */
+    justify-content: flex-end;
     align-items: center;
     z-index: 1000;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 50px; /* Add space below the menu bar */
 }
+
 
 .menu-icon {
     font-size: 1.8rem;
