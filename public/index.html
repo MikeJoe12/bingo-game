@@ -8,14 +8,26 @@
  </head>
 <body>
 <div class="top-bar">
+<div class="menu-section">
     <div class="menu-icon" onclick="toggleMenu()">☰</div>
     <div class="menu-items" id="menuItems">
-        <a href="./CardGen.html" target="_blank">Card Generator</a>
-        <a href="#about">About</a>
-        <a href="#features">Features</a>
-        <a href="#contact">Contact</a>
+        <a href="./CardGen.html" target="_blank" onclick="closeMenu()">Card Generator</a>
+        <hr class="menu-separator">
+        <div class="menu-checkbox">
+			<input type="checkbox" id="speakCheckbox" onclick="setTimeout(closeMenu, 100)">
+			<label for="speakCheckbox">Enable Speech</label>
+		</div>
+        <hr class="menu-separator">
+        <a href="#" onclick="showAbout(); closeMenu()">About</a>
+        <a href="#" onclick="showContact(); closeMenu()">Contact</a>
+    </div>
+    <div class="tabs">
+        <button class="tab active" data-tab="game-tab" onclick="switchTab('game-tab')">Bingo Game</button>
+        <button class="tab" data-tab="players-tab" onclick="switchTab('players-tab')">Online Players</button>
     </div>
 </div>
+</div>
+
 <div id="login-container">
         <div id="login-box">
             <h2>Mishail Ultimate's Bingo</h2>
@@ -26,17 +38,13 @@
     </div>
 	
     <div class="container">
-        <div class="top-row">
-<div class="controls-left">
-    <div>
-        <input type="checkbox" id="enableDataCheckbox">
-        <label for="enableDataCheckbox">Play Online</label>
-    </div>
-    <div>
-        <input type="checkbox" id="speakCheckbox">
-        <label for="speakCheckbox">Enable Speech</label>
-    </div>
-</div>
+    <div id="game-tab" class="tab-content active">
+	
+       <div class="top-row">
+			<div class="controls-left">
+
+
+		</div>
 
             <div class="title">
                 <strong>Mishail's Ultimate Bingo</strong>
@@ -45,7 +53,7 @@
         </div>
         <div class="board" id="bingoBoard"></div>
  
-<div class="controls">
+		<div class="controls">
             <div id="qrCode">
                 <img src="QRCode.jpg" alt="QR Code" style="width: 100%; height: 100%; border-radius: 10px;">
             </div>
@@ -73,12 +81,18 @@
             <div id="calledBall" class="ball"></div>
             <input type="text" id="numberInput" placeholder="">
         </div>
+	</div>
+			<div id="players-tab" class="tab-content">
+							<div>
+        <input type="checkbox" id="enableDataCheckbox">
+        <label for="enableDataCheckbox">Enable Online</label>
+				</div>
 		    <div id="playerList">
             <h3>Players & Cards:</h3>
             <div id="playerCards"></div>
         </div>
-
-    </div>
+		</div>
+		
     <script src="/socket.io/socket.io.js"></script>
 	<script src="script.js"></script>
 </body>

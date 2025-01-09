@@ -1,7 +1,49 @@
-	function toggleMenu() {
-    const menu = document.getElementById('menuItems');
-    menu.classList.toggle('show');
-}	
+function switchTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Remove active class from all tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Show selected tab content and mark tab as active
+    document.getElementById(tabName).classList.add('active');
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+}
+// Function to toggle menu visibility
+function toggleMenu() {
+    const menuItems = document.getElementById("menuItems");
+    menuItems.style.display = menuItems.style.display === "block" ? "none" : "block";
+}
+// Function to close the menu
+function closeMenu() {
+    const menuItems = document.getElementById("menuItems");
+    menuItems.style.display = "none";
+}
+
+// Function to show the About message
+function showAbout() {
+    alert("This is the About section. You can add information about your website or application here.");
+}
+
+// Function to show the Contact message
+function showContact() {
+    alert("This is the Contact section. You can add contact details or a contact form here.");
+}
+
+// Function to hide the menu if clicking outside
+document.addEventListener("click", function (event) {
+    const menuIcon = document.querySelector(".menu-icon");
+    const menuItems = document.getElementById("menuItems");
+
+    // Check if the click is outside the menu and menu icon
+    if (!menuItems.contains(event.target) && !menuIcon.contains(event.target)) {
+        closeMenu();
+    }
+});
 		    // Add event listener for the Enter key on the password input
     document.getElementById('password-input').addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
@@ -161,6 +203,84 @@ layoutTitles.forEach((title) => {
 });
 
 }
+
+// Add this to your script.js file
+
+function createAlertDialog() {
+    // Create the alert container if it doesn't exist
+    let alertContainer = document.getElementById('custom-alert-container');
+    if (!alertContainer) {
+        alertContainer = document.createElement('div');
+        alertContainer.id = 'custom-alert-container';
+        document.body.appendChild(alertContainer);
+    }
+    return alertContainer;
+}
+
+function showAbout() {
+    const container = createAlertDialog();
+    container.innerHTML = `
+        <div class="modal-overlay">
+            <div class="custom-alert">
+                <div class="alert-header">
+                    <h2>About Mishail's Bingo</h2>
+                    <button class="close-button" onclick="closeAlert()">×</button>
+                </div>
+                <div class="alert-content">
+                    <p>Welcome to Mishail's Ultimate Bingo! This modern take on the classic game 
+                    features real-time multiplayer support, customizable layouts, and an 
+                    intuitive interface. Perfect for both casual players and serious bingo enthusiasts.</p>
+                    <br>
+                    <p>Features include:</p>
+                    <ul>
+                        <li>Auto-number generation</li>
+                        <li>Speech synthesis support</li>
+                        <li>Multiple prize layouts</li>
+                        <li>Online player tracking</li>
+                        <li>Mobile-friendly design</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    `;
+    container.style.display = 'block';
+    closeMenu();
+}
+
+function showContact() {
+    const container = createAlertDialog();
+    container.innerHTML = `
+        <div class="modal-overlay">
+            <div class="custom-alert">
+                <div class="alert-header">
+                    <h2>Contact Us</h2>
+                    <button class="close-button" onclick="closeAlert()">×</button>
+                </div>
+                <div class="alert-content">
+                    <p>Have questions or feedback? We likw to hear from you!</p>
+                    <p><center><strong>Email:</strong> mishail.oraha@gmail.com</center></p>
+                </div>
+            </div>
+        </div>
+    `;
+    container.style.display = 'block';
+    closeMenu();
+}
+
+function closeAlert() {
+    const container = document.getElementById('custom-alert-container');
+    if (container) {
+        container.style.display = 'none';
+    }
+}
+
+// Close alert when clicking outside the modal
+document.addEventListener('click', function(event) {
+    const container = document.getElementById('custom-alert-container');
+    if (container && event.target.classList.contains('modal-overlay')) {
+        closeAlert();
+    }
+});
 function createWinnerInput(layoutContainer) {
     // Create an input box if it doesn't exist for this layout
     let inputBox = layoutContainer.querySelector('.winner-input');
@@ -435,6 +555,7 @@ function clearPlayerCards() {
 
 
 //--------------------------------
+// Function to create a bingo card table with marked numbers
 function createBingoCardTable(card, playerName) {
     const table = document.createElement('table');
     table.className = 'bingo-table';
@@ -448,13 +569,30 @@ function createBingoCardTable(card, playerName) {
         headerRow.appendChild(th);
     });
 
+    // Find player's marked numbers from the server data
+    const playerData = playerCards.find(p => p.playerName === playerName);
+    const markedNumbers = playerData?.markedNumbers || [];
+
     // Populate Bingo card numbers
     for (let i = 0; i < 5; i++) {
         const row = table.insertRow();
         for (let j = 0; j < 5; j++) {
             const cell = row.insertCell();
-            cell.textContent = card[i][j]; // Assuming card is a 2D array of numbers
-			cell.setAttribute('data-number', card[i][j]);
+            const number = card[i][j];
+            
+            // Handle the center FREE space
+            if (i === 2 && j === 2) {
+                cell.textContent = 'FREE';
+                cell.classList.add('free-space', 'marked');  // Add both classes
+            } else {
+                cell.textContent = number;
+                cell.setAttribute('data-number', number);
+                
+                // Mark the cell if the number is in markedNumbers
+                if (markedNumbers.includes(number)) {
+                    cell.classList.add('marked');
+                }
+            }
         }
     }
 
@@ -462,16 +600,20 @@ function createBingoCardTable(card, playerName) {
     const removeButton = document.createElement('button');
     removeButton.textContent = 'X';
     removeButton.style.marginLeft = '10px';
-    removeButton.onclick = () => removePlayerCard(playerName); // Call the existing function
+    removeButton.style.fontWeight = 'bold';
+    removeButton.onclick = () => removePlayerCard(playerName);
 
     // Create a container for player name and button
     const playerHeader = document.createElement('div');
     playerHeader.textContent = playerName;
+    playerHeader.style.flex = '1';
+    playerHeader.style.textAlign = 'center';
+    playerHeader.style.fontWeight = 'bold';
     playerHeader.appendChild(removeButton);
 
     // Create a container for the entire player card
     const playerDiv = document.createElement('div');
-    playerDiv.className = 'player-card'; // Add class for styling
+    playerDiv.className = 'player-card';
     playerDiv.setAttribute('data-player', playerName);
     
     // Append header and table to the player div
@@ -480,6 +622,27 @@ function createBingoCardTable(card, playerName) {
 
     return playerDiv;
 }
+
+function createResetButton() {
+  const resetButton = document.createElement('button');
+  resetButton.textContent = 'Reset All Players';
+  resetButton.id = 'resetAllPlayers';
+  resetButton.onclick = removeAllPlayerCards;
+  
+  const playerList = document.getElementById('playerList');
+  playerList.insertBefore(resetButton, playerList.firstChild);
+}
+
+function removeAllPlayerCards() {
+  const playerCards = document.querySelectorAll('.player-card');
+  playerCards.forEach(card => {
+    const playerName = card.getAttribute('data-player');
+    removePlayerCard(playerName);
+  });
+}
+
+// Call this function after the player list tab is created
+createResetButton();
 
 function removePlayerCard(playerName) {
     // First, remove the player from the server
@@ -522,40 +685,64 @@ function closeCard(playerName) {
     .catch(error => console.error('Error:', error));
 }
 
+// Update the fetchPlayerCards function to store the server data
 function fetchPlayerCards() {
-const enableDataCheckbox = document.getElementById('enableDataCheckbox');
- if (!enableDataCheckbox.checked) {
-          return;
+    const enableDataCheckbox = document.getElementById('enableDataCheckbox');
+    if (!enableDataCheckbox.checked) {
+        return;
     }
+    
     fetch('/getCards')
         .then(response => response.json())
         .then(data => {
+            // Store the player cards data globally
+            window.playerCards = data;
+            
             const playerList = document.getElementById('playerCards');
-    //        playerList.innerHTML = ''; // Clear existing cards to prevent duplicates
-
             data.forEach(player => {
                 let existingCard = document.querySelector(`.player-card[data-player="${player.playerName}"]`);
                 if (!existingCard) {
                     let playerDiv = createBingoCardTable(player.card, player.playerName);
                     playerList.appendChild(playerDiv);
+                } else {
+                    // Update existing card's marked numbers
+                    player.markedNumbers?.forEach(number => {
+                        const cell = existingCard.querySelector(`td[data-number="${number}"]`);
+                        if (cell && !cell.classList.contains('marked')) {
+                            cell.classList.add('marked');
+                        }
+                    });
                 }
             });
-        });
+        })
+        .catch(error => console.error('Error fetching player cards:', error));
 }
-        function updatePlayerCard(playerName, number) {
-            const playerCard = document.querySelector(`[data-player="${playerName}"]`);
-            if (playerCard) {
-                const cell = playerCard.querySelector(`td[data-number="${number}"]`);
-                if (cell) {
-												  
-							
-												  
-                    cell.classList.toggle('marked');
-					 
+
+// Update the number marking function
+function updatePlayerCard(playerName, number) {
+    const playerCard = document.querySelector(`[data-player="${playerName}"]`);
+    if (playerCard) {
+        const cell = playerCard.querySelector(`td[data-number="${number}"]`);
+        if (cell) {
+            cell.classList.toggle('marked');
+            
+            // Update the playerCards array in memory
+            const player = window.playerCards?.find(p => p.playerName === playerName);
+            if (player) {
+                if (!player.markedNumbers) {
+                    player.markedNumbers = [];
+                }
+                
+                const numberIndex = player.markedNumbers.indexOf(number);
+                if (numberIndex === -1) {
+                    player.markedNumbers.push(number);
+                } else {
+                    player.markedNumbers.splice(numberIndex, 1);
                 }
             }
-						 
         }
+    }
+}
 
       
         setInterval(fetchPlayerCards, 5000);

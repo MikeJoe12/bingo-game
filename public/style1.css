@@ -197,7 +197,7 @@
         }
 
         #bingoCard td.free-cell {
-            background-color: var(--primary-color);
+            background-color: var(--secondary-color);
             color: white;
             cursor: default;
             font-size: 1.2rem;
@@ -323,4 +323,14 @@
 .bingo-layout-title.disabled {
     color: #888;
     text-decoration: line-through;
+}
+// Add this CSS to style1.css
+#usernameError {
+    color: red;
+    margin-top: 5px;
+    font-size: 0.9rem;
+    text-align: center;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
 }

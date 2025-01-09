@@ -109,9 +109,9 @@
         }
 
         .bingo-card {
-            width: 300px;
+            width: 400px;
             aspect-ratio: 1;
-            padding: 10px;
+            
             background-color: white;
             text-align: center;
             page-break-inside: avoid;
@@ -134,7 +134,7 @@
         .bingo-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            border-width: 2px;
+            border-width: 6px;
             border-style: solid;
             gap: 2px;
             border-radius: 0 0 8px 8px;
@@ -144,7 +144,7 @@
             background-color: white;
             text-align: center;
             padding: -15px 0;
-            font-size: 24px;
+            font-size: 35px;
             font-weight: bold;
             aspect-ratio: 1;
             display: flex;
@@ -203,13 +203,51 @@
             </select>
 
             <label for="cardColor">Card Color:</label>
-            <select id="cardColor" name="cardColor">
-                <option value="red">Red</option>
-                <option value="blue">Blue</option>
-                <option value="green">Green</option>
-                <option value="purple">Purple</option>
-                <option value="orange">Orange</option>
-            </select>
+<select id="cardColor" name="cardColor">
+    <option value="red">Red</option>
+    <option value="blue">Blue</option>
+    <option value="green">Green</option>
+    <option value="purple">Purple</option>
+    <option value="orange">Orange</option>
+    <option value="magenta">Magenta</option>
+    <option value="black">Black</option>
+    <option value="gray">Gray</option>
+    <option value="silver">Silver</option>
+    <option value="maroon">Maroon</option>
+    <option value="yellow">Yellow</option>
+    <option value="lime">Lime</option>
+    <option value="aqua">Aqua</option>
+    <option value="teal">Teal</option>
+    <option value="navy">Navy</option>
+    <option value="fuchsia">Fuchsia</option>
+    <option value="olive">Olive</option>
+    <option value="cyan">Cyan</option>
+    <option value="pink">Pink</option>
+    <option value="brown">Brown</option>
+    <option value="gold">Gold</option>
+    <option value="coral">Coral</option>
+    <option value="indigo">Indigo</option>
+    <option value="violet">Violet</option>
+    <option value="beige">Beige</option>
+    <option value="salmon">Salmon</option>
+    <option value="khaki">Khaki</option>
+    <option value="turquoise">Turquoise</option>
+    <option value="peachpuff">Peach Puff</option>
+    <option value="plum">Plum</option>
+    <option value="orchid">Orchid</option>
+    <option value="chocolate">Chocolate</option>
+    <option value="wheat">Wheat</option>
+    <option value="tan">Tan</option>
+    <option value="slateblue">Slate Blue</option>
+    <option value="powderblue">Powder Blue</option>
+    <option value="peru">Peru</option>
+    <option value="lavender">Lavender</option>
+    <option value="ivory">Ivory</option>
+    <option value="honeydew">Honeydew</option>
+    <option value="firebrick">Firebrick</option>
+    <option value="crimson">Crimson</option>
+</select>
+
 
             <div class="actions">
                 <button type="button" class="btn-primary" onclick="generateMultipleCards()">Generate Bingo Cards</button>
@@ -317,83 +355,111 @@
         }
 
         async function exportToPDF() {
-            const loading = document.getElementById('loading');
-            loading.classList.add('active');
-            
-            try {
-                const { jsPDF } = window.jspdf;
-                const cards = document.querySelectorAll('.bingo-card');
-                const cardsPerPage = parseInt(document.getElementById('cardsPerPage').value);
-                
-                const pdf = new jsPDF({
-                    orientation: cardsPerPage > 2 ? 'portrait' : 'landscape',
-                    unit: 'mm',
-                    format: 'a4'
+    const loading = document.getElementById('loading');
+    loading.classList.add('active');
+    
+    try {
+        const { jsPDF } = window.jspdf;
+        const cards = document.querySelectorAll('.bingo-card');
+        const cardsPerPage = parseInt(document.getElementById('cardsPerPage').value);
+        
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+        
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        let currentCard = 0;
+
+        const pageMargin = 0; // No margins
+        const cardSpacing = 0; // No spacing between cards
+
+        while (currentCard < cards.length) {
+            if (currentCard > 0) {
+                pdf.addPage();
+            }
+
+            let cardWidth, cardHeight, cols, rows;
+            if (cardsPerPage === 1) {
+                // Single card per page
+                cardWidth = Math.min(pdfWidth, pdfHeight);
+                cardHeight = cardWidth;
+                const x = (pdfWidth - cardWidth) / 2;
+                const y = (pdfHeight - cardHeight) / 2;
+
+                const card = cards[currentCard];
+                const canvas = await html2canvas(card, {
+                    scale: 3, // High resolution
+                    backgroundColor: null
                 });
-                
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                let currentCard = 0;
+                const imgData = canvas.toDataURL('image/png');
+                pdf.addImage(imgData, 'PNG', x, y, cardWidth, cardHeight);
+                currentCard++;
+            } else if (cardsPerPage === 2) {
+                // Two cards per page
+                cols = 2;
+                rows = 1;
+                cardWidth = pdfWidth / cols;
+                cardHeight = pdfHeight / rows;
 
-                const pageMargin = 10;
-                const cardSpacing = 5;
+                for (let i = 0; i < cardsPerPage && currentCard < cards.length; i++) {
+                    const card = cards[currentCard];
+                    const canvas = await html2canvas(card, {
+                        scale: 3,
+                        backgroundColor: null
+                    });
+                    const imgData = canvas.toDataURL('image/png');
+                    
+                    const col = i % cols;
+                    const row = Math.floor(i / cols);
+                    const x = col * cardWidth;
+                    const y = (pdfHeight - cardHeight) / 2;
 
-                while (currentCard < cards.length) {
-                    if (currentCard > 0) {
-                        pdf.addPage();
-                    }
-
-                    let cardWidth, cardHeight, cols, rows;
-                    if (cardsPerPage === 1) {
-                        cardWidth = Math.min(pdfWidth - (pageMargin * 2), pdfHeight - (pageMargin * 2));
-                        cardHeight = cardWidth;
-                        const x = (pdfWidth - cardWidth) / 2;
-                        const y = (pdfHeight - cardHeight) / 2;
-
-                        const card = cards[currentCard];
-                        const canvas = await html2canvas(card, {
-                            scale: 2,
-                            backgroundColor: null
-                        });
-                        const imgData = canvas.toDataURL('image/png');
-                        pdf.addImage(imgData, 'PNG', x, y, cardWidth, cardHeight);
-                        currentCard++;
-                    } else {
-                        if (cardsPerPage === 2) {
-                            cols = 2;
-                            rows = 1;
-                            cardWidth = (pdfWidth - (pageMargin * 2) - cardSpacing) / 2;
-                        } else {
-                            cols = 2;
-                            rows = cardsPerPage / 2;
-                            cardWidth = (pdfWidth - (pageMargin * 2) - cardSpacing) / 2;
-                        }
-                        cardHeight = cardWidth;
-
-                        for (let i = 0; i < cardsPerPage && currentCard < cards.length; i++) {
-                            const card = cards[currentCard];
-                            const canvas = await html2canvas(card, {
-                                scale: 2,
-                                backgroundColor: null
-                            });
-                            const imgData = canvas.toDataURL('png');
-                            
-                            const col = i % cols;
-                            const row = Math.floor(i / cols);
-                            const x = pageMargin + (col * (cardWidth + cardSpacing));
-                            const y = pageMargin + (row * (cardHeight + cardSpacing));
-
-                            pdf.addImage(imgData, 'PNG', x, y, cardWidth, cardHeight);
-                            currentCard++;
-                        }
-                    }
+                    pdf.addImage(imgData, 'PNG', x, y, cardWidth, cardHeight);
+                    currentCard++;
                 }
+            } else if (cardsPerPage === 4) {
+                // Four cards per page with spacing
+                cols = 2;
+                rows = 2;
+                const margin = 5; // Margin from page edges in mm
+                const spacing = 5; // Space between cards in mm
+                
+                // Calculate card dimensions with margins and spacing
+                cardWidth = (pdfWidth - (2 * margin) - spacing) / cols;
+                cardHeight = (pdfHeight - (2 * margin) - spacing) / rows;
 
-                pdf.save('bingo_cards.pdf');
-            } finally {
-                loading.classList.remove('active');
+                for (let i = 0; i < cardsPerPage && currentCard < cards.length; i++) {
+                    const card = cards[currentCard];
+                    const canvas = await html2canvas(card, {
+                        scale: 3,
+                        backgroundColor: null
+                    });
+                    const imgData = canvas.toDataURL('image/png');
+                    
+                    const col = i % cols;
+                    const row = Math.floor(i / cols);
+                    
+                    // Calculate position with margins and spacing
+                    const x = margin + (col * (cardWidth + spacing));
+                    const y = margin + (row * (cardHeight + spacing));
+
+                    pdf.addImage(imgData, 'PNG', x, y, cardWidth, cardHeight);
+                    currentCard++;
+                }
             }
         }
+
+        pdf.save('bingo_cards.pdf');
+    } finally {
+        loading.classList.remove('active');
+    }
+}
+
+
+
     </script>
 </body>
 </html>

@@ -33,9 +33,6 @@
     font-size: 14px;
 }
 
-
-
-
         body {
     font-family: 'Arial', sans-serif;
     background: linear-gradient(to right, #1e3c72, #2a5298);
@@ -50,32 +47,36 @@
 }
 
 .container {
-    position: relative;
+    position: absolute; /* Make it start at a specific position */
+    top: 0; /* Align to the top of the page */
+    left: 0; /* Align to the left of the page */
+    width: 97%; /* Ensure it spans the full width */
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start; /* Keep elements left-aligned */
     gap: 1vw;
     padding: 2vw;
-    max-width: 1200px; /* Adjust width to fit content */
-    width: 100%;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 15px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
-    margin: auto; /* Center the container */
+    z-index: 1; /* Ensure it stays below the top-bar */
 }
+
+
         .top-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            margin-bottom: -0.5vw;
+           
         }
 .controls-left {
     display: flex;
     flex-direction: column; /* Keep the checkboxes in a column */
     align-items: flex-start; /* Align to the start of the container */
     gap: 10px; /* Add spacing between checkbox-label pairs */
+    margin-bottom: 3vw; /* Adjust margin to move up */
 }
 
 .controls-left > div {
@@ -87,8 +88,6 @@
 #enableDataCheckbox, #speakCheckbox {
     transform: scale(1.5); /* Keep the checkbox size consistent */
 }
-
-
         label {
             font-size: 1.0vw;
             color: white;
@@ -100,20 +99,22 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5), 4px 4px 8px rgba(0, 0, 0, 0.3);
             text-align: center;
             font-weight: bold;
+			 margin-top: -2vw
+			
         }
-        #generateButton {
-            padding: 10px 15px;
-            font-size: 1.2vw;
-            border: none;
-            border-radius: 5px;
-            background-color: #ff6347;
-            color: white;
-            cursor: pointer;
-            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3), -4px -4px 8px rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            font-weight: bold;
-			margin-top: 20px;
-        }
+#generateButton {
+    padding: 10px 15px;
+    font-size: 1.2vw;
+    border: none;
+    border-radius: 5px;
+    background-color: #ff6347;
+    color: white;
+    cursor: pointer;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3), -4px -4px 8px rgba(255, 255, 255, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    font-weight: bold;
+    margin-top: -2vw; /* Move the button up */
+}
         #generateButton:hover {
             transform: translateY(-4px);
             box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.4), -6px -6px 12px rgba(255, 255, 255, 0.4);
@@ -122,16 +123,20 @@
             transform: translateY(2px);
             box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.4), inset -4px -4px 8px rgba(255, 255, 255, 0.3);
         }
-        .board {
-            display: grid;
-            grid-template-columns: repeat(16, 1fr);
-            gap: 0.5vw;
-            background-color: rgba(255, 255, 255, 0.15);
-            padding: 1vw;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-            width: 100%;
-        }
+.board {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr); /* Adjust columns as needed */
+    gap: 0.5vw;
+    background-color: rgba(255, 255, 255, 0.15);
+    padding: 1vw;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    width: auto; /* Prevent full width expansion */
+    position: relative; /* Maintain positioning */
+    margin-left: 0; /* Ensure it sticks to the left */
+    margin-right: auto; /* Prevent centering */
+}
+
         .cell {
             aspect-ratio: 1;
             display: flex;
@@ -185,7 +190,8 @@
   gap: 20px;
   width: 100%;
   justify-content: flex-start;
-  padding-left: 60vw;
+  padding-left: 30vw;
+   margin-top: 0.5vw;
 }
 
         #numberInput {
@@ -259,18 +265,16 @@
 #playerList {
     position: relative;
     width: 100%;
-    margin-top: 8px;
-    padding-left: 10px; /* Make space for QR code if needed */
+    margin-top: 3px;
+    padding-left: 20px; /* Make space for QR code if needed */
 }
 
 #playerCards {
     bottom: -5px; /* Remove bottom positioning */
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
+    gap: 70px;
     width: 100%; /* Add full width */
-    max-width: 1700px; /* Match container max-width */
-	    max-height: 500px; /* Adjust as necessary */
     overflow-y: auto;
     position: relative; /* Maintain layout flow */
     width: 100%;
@@ -281,8 +285,9 @@
     padding: 5px;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
-    width: 100%;
+    width: 150%;
     box-sizing: border-box;
+	
 }
 
 #playerList {
@@ -297,13 +302,14 @@
 .player-card table {
     border-collapse: collapse;
     margin: 3px 0;
+	
 }
 
 .player-card td {
-    width: 20px;
-    height: 15px;
+    width: 30px;
+    height: 25px;
     text-align: center;
-    font-size: 12px;
+    font-size: 16px;
     font-weight: bold;
     border: 1px solid #333;
 }
@@ -313,7 +319,7 @@
 }
 
 .player-card th {
-    font-size: 10px;
+    font-size: 16px;
     font-weight: bold;
     text-align: center;
     padding: 3px;
@@ -493,48 +499,216 @@
     width: 100%;
     background-color: rgba(235, 235, 235, 0.95);
     color: #333;
-    padding: 5px 10px;
+    padding: 5px 20px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 50px; /* Add space below the menu bar */
 }
 
+.menu-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-right: 20px;
+}
+
+.tab {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 5px;
+}
+
+.tab.active {
+    background-color: rgba(30, 60, 114, 0.9);
+    color: white;
+}
+
+.tab:hover {
+    background-color: rgba(30, 60, 114, 0.1);
+}
 
 .menu-icon {
     font-size: 1.8rem;
     font-weight: bold;
     cursor: pointer;
-    margin-right: 40px; /* Prevents overlap with the scrollbar */
-    color: #333; /* Matches the text color */
+    color: #333;
 }
 
 .menu-items {
     display: none;
     flex-direction: column;
-    background-color: rgba(240, 240, 240, 0.95); /* Slightly darker off-white */
+    background-color: rgba(240, 240, 240, 0.95);
     position: absolute;
-    top: 50px; /* Places the dropdown below the icon */
-    right: 40px; /* Aligns dropdown with the burger icon */
+    top: 50px;
+    
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
+.menu-items.show {
+    display: flex;
+}
+
 .menu-items a {
     text-decoration: none;
-    color: #333; /* Dark text for readability */
+    color: #333;
     padding: 10px 20px;
     display: block;
     transition: background-color 0.3s;
-	font-weight: bold;
+    font-weight: bold;
+	font-size: 15px;
 }
 
 .menu-items a:hover {
-    background-color: rgba(200, 200, 200, 0.9); /* Slight hover effect */
+    background-color: rgba(200, 200, 200, 0.9);
 }
 
-.menu-items.show {
+/* Remove old tabs container styles */
+.tabs-container {
+    display: none;
+}
+
+/* Adjust container margin to account for top bar */
+.container {
+    margin-top: 60px;
+}
+
+/* Tab content styles */
+.tab-content {
+    display: none;
+    width: 100%;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+#playerList.active {
+    display: block;
+    width: 100%;
+}
+/* Add this to your style.css */
+.player-card .free-space {
+    font-size: 10px;  /* Smaller font size for FREE text */
+    background-color: #ff9999;  /* Same color as marked cells */
+    color: black;
+    font-weight: bold;
+}
+.menu-separator {
+    border: 0;
+    height: 1px;
+    background: #ccc;
+    margin: 5px 0;
+}
+.menu-checkbox {
+    padding: 10px 20px;
     display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.menu-checkbox input[type="checkbox"] {
+    transform: scale(1.2);
+}
+
+.menu-checkbox label {
+    color: #333;
+    font-size: 14px;
+    font-weight: bold;
+}
+/* Add these styles to your style.css file */
+
+#custom-alert-container {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.custom-alert {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 500px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.alert-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.5rem;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0 8px;
+    transition: color 0.2s;
+}
+
+.close-button:hover {
+    color: #333;
+}
+
+.alert-content {
+    padding: 20px;
+    color: #444;
+    line-height: 1.5;
+}
+
+.alert-content ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.alert-content li {
+    margin: 5px 0;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
