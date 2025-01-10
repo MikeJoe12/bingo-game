@@ -12,6 +12,8 @@ function switchTab(tabName) {
     // Show selected tab content and mark tab as active
     document.getElementById(tabName).classList.add('active');
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+	
+	saveGameState();
 }
 // Function to toggle menu visibility
 function toggleMenu() {
@@ -33,6 +35,105 @@ function showAbout() {
 function showContact() {
     alert("This is the Contact section. You can add contact details or a contact form here.");
 }
+
+// State management functions
+function saveGameState() {
+    const state = {
+        calledNumbers: Array.from(calledNumbers),
+        layouts: {
+            layout1: {
+                disabled: document.getElementById('layoutContainer1').classList.contains('disabled'),
+                winner: document.querySelector('#layoutContainer1 .winner-display')?.textContent || '',
+                highlightedCells: Array.from(document.querySelectorAll('#layout1 .highlighted')).map(cell => 
+                    Array.from(cell.parentElement.children).indexOf(cell))
+            },
+            layout2: {
+                disabled: document.getElementById('layoutContainer2').classList.contains('disabled'),
+                winner: document.querySelector('#layoutContainer2 .winner-display')?.textContent || '',
+                highlightedCells: Array.from(document.querySelectorAll('#layout2 .highlighted')).map(cell => 
+                    Array.from(cell.parentElement.children).indexOf(cell))
+            },
+            layout3: {
+                disabled: document.getElementById('layoutContainer3').classList.contains('disabled'),
+                winner: document.querySelector('#layoutContainer3 .winner-display')?.textContent || '',
+                highlightedCells: Array.from(document.querySelectorAll('#layout3 .highlighted')).map(cell => 
+                    Array.from(cell.parentElement.children).indexOf(cell))
+            }
+        },
+        settings: {
+            speechEnabled: document.getElementById('speakCheckbox').checked,
+            onlineEnabled: document.getElementById('enableDataCheckbox').checked
+        },
+        lastCalledNumbers: [
+            document.getElementById('calledBall').textContent,
+            document.getElementById('lastBall1').textContent,
+            document.getElementById('lastBall2').textContent,
+            document.getElementById('lastBall3').textContent,
+            document.getElementById('lastBall4').textContent
+        ].filter(n => n),
+        currentTab: document.querySelector('.tab.active')?.getAttribute('data-tab') || 'game-tab'
+    };
+    localStorage.setItem('bingoGameState', JSON.stringify(state));
+}
+
+function loadGameState() {
+    const savedState = localStorage.getItem('bingoGameState');
+    if (!savedState) return false;
+
+    const state = JSON.parse(savedState);
+
+    // Restore called numbers
+    calledNumbers = new Set(state.calledNumbers);
+    state.calledNumbers.forEach(number => {
+        const letter = letters[Math.floor((number - 1) / 15)];
+        const cell = document.getElementById(`${letter}${number}`);
+        if (cell) cell.classList.add('called');
+    });
+
+    // Restore layouts state
+    Object.entries(state.layouts).forEach(([layoutId, layoutState]) => {
+        const container = document.getElementById(layoutId.replace('layout', 'layoutContainer'));
+        if (layoutState.disabled) {
+            container.classList.add('disabled');
+            if (layoutState.winner) {
+                createWinnerDisplay(container, layoutState.winner);
+            }
+        }
+        
+        // Restore highlighted cells
+        const layout = document.getElementById(layoutId);
+        const cells = layout.getElementsByClassName('bingo-layout-cell');
+        layoutState.highlightedCells.forEach(index => {
+            if (cells[index]) cells[index].classList.add('highlighted');
+        });
+    });
+
+    // Restore settings
+    document.getElementById('speakCheckbox').checked = state.settings.speechEnabled;
+    document.getElementById('enableDataCheckbox').checked = state.settings.onlineEnabled;
+    if (state.settings.onlineEnabled) {
+        startFetchingPlayerData();
+        document.getElementById('playerList').style.display = 'block';
+		document.getElementById('qrCode').style.display = 'block';
+    }
+
+    // Restore last called numbers
+    if (state.lastCalledNumbers.length > 0) {
+        const [current, ...last] = state.lastCalledNumbers;
+        document.getElementById('calledBall').textContent = current;
+        ['lastBall1', 'lastBall2', 'lastBall3', 'lastBall4'].forEach((id, index) => {
+            if (last[index]) document.getElementById(id).textContent = last[index];
+        });
+    }
+
+    // Restore active tab
+    if (state.currentTab) {
+        switchTab(state.currentTab);
+    }
+
+    return true;
+}
+
 
 // Function to hide the menu if clicking outside
 document.addEventListener("click", function (event) {
@@ -87,13 +188,21 @@ document.addEventListener("click", function (event) {
 
         // Check authentication on page load
         window.onload = function() {
-            const loginContainer = document.getElementById('login-container');
+           // const loginContainer = document.getElementById('login-container');
             const mainContent = document.getElementById('main-content');
 
-            // Always show login screen
-            loginContainer.style.display = 'flex';
-            mainContent.style.display = 'none';
-        };
+    //createBoard();
+    const stateLoaded = loadGameState();
+    
+    // If state was loaded successfully, skip login
+    if (stateLoaded) {
+        document.getElementById('login-container').style.display = 'none';
+        mainContent.style.display = 'block';
+    } else {
+        document.getElementById('login-container').style.display = 'flex';
+        mainContent.style.display = 'none';
+    }
+};
 		const socket = io();
 	        const board = document.getElementById('bingoBoard');
         const letters = ['B', 'I', 'N', 'G', 'O'];
@@ -101,6 +210,60 @@ document.addEventListener("click", function (event) {
         let calledNumbers = new Set();
         const shuffleSound = new Audio('shuffle.mp3');
 
+
+// Add a function to clear state if needed
+function resetGame() {
+    if (confirm('Are you sure you want to reset the game? This will clear all called numbers and layout states.')) {
+		removeAllPlayerCards();
+        // Clear local storage
+        localStorage.removeItem('bingoGameState');
+        
+        // Reset called numbers
+        calledNumbers = new Set();
+        
+        // Clear all marked cells on the board
+        document.querySelectorAll('.cell.called, .cell.flashing-called').forEach(cell => {
+            cell.classList.remove('called', 'flashing-called');
+        });
+        
+        // Clear the called balls display
+        document.getElementById('calledBall').textContent = '';
+        ['lastBall1', 'lastBall2', 'lastBall3', 'lastBall4'].forEach(id => {
+            document.getElementById(id).textContent = '';
+        });
+        
+        // Reset layouts to their initial state
+        document.querySelectorAll('.bingo-layout-container').forEach(container => {
+            container.classList.remove('disabled');
+            const winnerDisplay = container.querySelector('.winner-display');
+            if (winnerDisplay) {
+                winnerDisplay.remove();
+            }
+        });
+        
+        // Reset settings
+        const speakCheckbox = document.getElementById('speakCheckbox');
+        speakCheckbox.checked = false;
+        
+        // Handle enableDataCheckbox properly
+        const enableDataCheckbox = document.getElementById('enableDataCheckbox');
+        if (enableDataCheckbox.checked) {
+            // First update the checkbox state
+            enableDataCheckbox.checked = false;
+            
+            // Then trigger the change event to execute associated functionality
+            const event = new Event('change');
+            enableDataCheckbox.dispatchEvent(event);
+        }
+        
+        // Switch back to game tab
+        switchTab('game-tab');
+        
+        // Save the cleared state
+        saveGameState();
+		
+    }
+}
 
 function createBoard() {
     for (let row = 0; row < letters.length; row++) {
@@ -122,6 +285,7 @@ function createBoard() {
         }
     }
 	createBingoLayouts();
+	sendLayoutsToServer();
 }
 
        function createBingoLayouts() {
@@ -157,6 +321,7 @@ function createBoard() {
                         const layoutContainer = layout.closest('.bingo-layout-container');
                         if (!layoutContainer.classList.contains('disabled')) {
                             cell.classList.toggle('highlighted');
+							saveGameState(); // Save state after cell toggle
                         }
                     });
                     
@@ -202,7 +367,16 @@ layoutTitles.forEach((title) => {
     });
 });
 
+document.querySelectorAll('.bingo-layout-title').forEach(title => {
+        title.addEventListener('click', () => {
+            setTimeout(saveGameState, 100); // Save state after layout changes
+        });
+    });
 }
+
+// Add state management to settings changes
+document.getElementById('speakCheckbox')?.addEventListener('change', saveGameState);
+document.getElementById('enableDataCheckbox')?.addEventListener('change', saveGameState);
 
 // Add this to your script.js file
 
@@ -409,6 +583,7 @@ function undoNumber(number) {
             updateCalledNumbers(`${letter} ${number}`);
             speakNumber(`${letter}. ${number}`);
 			 socket.emit('numberCalled', number);
+			 saveGameState();
         }
 
         let isGenerating = false;
@@ -471,28 +646,32 @@ function undoNumber(number) {
             }, 3000);
         }
 
-        function flashBoard() {
-            if (speakCheckbox.checked) {
-                shuffleSound.play();
+function flashBoard() {
+    if (speakCheckbox.checked) {
+        shuffleSound.play();
+    }
+
+    const cells = document.querySelectorAll('.cell:not(.called):not(.header)');
+    const maxFlashes = Math.min(cells.length, 10); // Flash only as many cells as available
+    const flashInterval = setInterval(() => {
+        const randomCells = [];
+        while (randomCells.length < maxFlashes) {
+            const randomCell = cells[Math.floor(Math.random() * cells.length)];
+            if (!randomCells.includes(randomCell)) {
+                randomCells.push(randomCell);
+                randomCell.classList.add('flashing-random');
+                setTimeout(() => randomCell.classList.remove('flashing-random'), 300);
             }
-            const cells = document.querySelectorAll('.cell:not(.called):not(.header)');
-            const flashInterval = setInterval(() => {
-                const randomCells = [];
-                while (randomCells.length < 10) {
-                    const randomCell = cells[Math.floor(Math.random() * cells.length)];
-                    if (!randomCells.includes(randomCell)) {
-                        randomCells.push(randomCell);
-                        randomCell.classList.add('flashing-random');
-                        setTimeout(() => randomCell.classList.remove('flashing-random'), 300);
-                    }
-                }
-            }, 100);
-            setTimeout(() => {
-                clearInterval(flashInterval);
-                shuffleSound.pause();
-                shuffleSound.currentTime = 0;
-            }, 3000);
         }
+    }, 100);
+
+    setTimeout(() => {
+        clearInterval(flashInterval);
+        shuffleSound.pause();
+        shuffleSound.currentTime = 0;
+    }, 3000);
+}
+
 
         function updateCalledNumbers(newNumber) {
     const lastBalls = [
@@ -523,15 +702,38 @@ const enableDataCheckbox = document.getElementById('enableDataCheckbox');
 const playerList = document.getElementById('playerList');
 
 enableDataCheckbox.addEventListener('change', () => {
+	const isEnabled = enableDataCheckbox.checked;
     if (enableDataCheckbox.checked) {
         startFetchingPlayerData(); // Start periodic fetching
 		playerList.style.display = 'block'; // Show the player list
+		qrCode.style.display = 'block';
     } else {
         stopFetchingPlayerData(); // Stop periodic fetching
 		playerList.style.display = 'none'; // Hide the player list
+		qrCode.style.display = 'none';
         clearPlayerCards(); // Optional: clear existing data
     }
-});
+	
+  // Update server with new login status
+    fetch('/updateLoginStatus', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ enabled: isEnabled })
+    });
+
+    if (isEnabled) {
+        startFetchingPlayerData();
+        playerList.style.display = 'block';
+		qrCode.style.display = 'block';
+    } else {
+        stopFetchingPlayerData();
+        playerList.style.display = 'none';
+		qrCode.style.display = 'none';
+        clearPlayerCards();
+    }
+});	
 
 let fetchInterval = null;
 

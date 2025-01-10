@@ -1,3 +1,6 @@
+let isPlayerActive = false;
+let isLoginEnabled = false;
+
 // Add this to the beginning of the script section in player.html
 // Function to generate a unique user ID
 function generateUserId() {
@@ -44,6 +47,7 @@ function generateTableCells() {
     let currentPlayerName = '';
 
     socket.on('displayCalledNumber', (number) => {
+		if (!isPlayerActive) return;
         if (number >= 1 && number <= 15) {
             document.getElementById('calledNumber').textContent = `B ${number}`;
         } else if (number >= 16 && number <= 30) {
@@ -56,21 +60,40 @@ function generateTableCells() {
             document.getElementById('calledNumber').textContent = `O ${number}`;
         }
   
-        // Find and flash matching cells
         const cells = document.querySelectorAll('#bingoCard td');
-        cells.forEach(cell => {
-            if (parseInt(cell.textContent) === number) {
-                cell.classList.add('matched');
-                
-                // Remove the matched class after animation completes
-                setTimeout(() => {
-                    cell.classList.remove('matched');
-                }, 1000);
-            }
-        });
-	
-        playChime();
+    cells.forEach(cell => {
+        // Match the called number with the cell's text
+        if (parseInt(cell.textContent) === number) {
+            // Add the flashing animation
+            cell.classList.add('matched');
+
+            // After the animation, add the red-border class
+            setTimeout(() => {
+                cell.classList.remove('matched');
+                cell.classList.add('red-border');
+            }, 1000);
+
+            // Add a click event listener to remove the red-border class
+            cell.addEventListener('click', function handleClick() {
+                cell.classList.remove('red-border');
+                cell.removeEventListener('click', handleClick); // Ensure it only runs once
+            });
+        }
     });
+
+    // Play the chime sound
+    playChime();
+});
+
+socket.on('playerDeactivated', (deactivatedPlayerName) => {
+    if (deactivatedPlayerName === currentPlayerName) {
+        isPlayerActive = false;
+        // Disable the bingo card
+        disableBingoCard();
+        // Show deactivation message
+        showDeactivationMessage();
+    }
+});
 	
 socket.on('layoutsUpdate', (layoutsData) => {
     console.log('Received layoutsUpdate:', layoutsData); // Debugging
@@ -110,13 +133,129 @@ socket.on('layoutsUpdate', (layoutsData) => {
         }
     });
 });
+//----------------
+// Add login status handler
+socket.on('loginStatusChanged', ({ enabled }) => {
+    isLoginEnabled = enabled;
+    updateLoginUI();
+});
 
+// Check login status when page loads
+window.addEventListener('load', async () => {
+    try {
+        const response = await fetch('/loginStatus');
+        const data = await response.json();
+        isLoginEnabled = data.enabled;
+        updateLoginUI();
+        
+        // Only check for existing card if login is enabled
+if (isLoginEnabled) {
+            const userId = getUserId();
+            const cardResponse = await fetch(`/checkExistingCard/${userId}`);
+            const cardData = await cardResponse.json();
+            
+            if (cardData.exists && cardData.playerData) {
+                document.getElementById('playerName').value = cardData.playerData.playerName;
+                if (cardData.playerData.card && Array.isArray(cardData.playerData.card)) {
+                    loadExistingCard(cardData.playerData);
+                    // Ensure socket connection is established
+                    socket.connect();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
+});
 
+// Add reconnection handling
+socket.on('connect', () => {
+    if (currentPlayerName) {
+        socket.emit('playerActivated', currentPlayerName);
+        isPlayerActive = true;
+    }
+});
+
+socket.on('disconnect', () => {
+    isPlayerActive = false;
+});
+
+async function checkExistingCard(userId) {
+    if (!isLoginEnabled) return;
+    
+    try {
+        const response = await fetch(`/checkExistingCard/${userId}`);
+        const data = await response.json();
+        if (data.exists && data.playerData) {
+            document.getElementById('playerName').value = data.playerData.playerName;
+            if (data.playerData.card && Array.isArray(data.playerData.card)) {
+                loadExistingCard(data.playerData);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading existing card:', error);
+    }
+}
+
+function updateLoginUI() {
+    const loginSection = document.getElementById('loginSection');
+    const loginMessage = document.getElementById('loginMessage') || createLoginMessage();
+    
+    if (isLoginEnabled) {
+        loginSection.style.display = 'block';
+        loginMessage.style.display = 'none';
+    } else {
+        loginSection.style.display = 'none';
+        loginMessage.style.display = 'block';
+    }
+}
+
+function createLoginMessage() {
+    const message = document.createElement('div');
+    message.id = 'loginMessage';
+    message.className = 'login-message';
+    message.innerHTML = `
+        <p>Login is currently disabled by the host.</p>
+        <p>Please wait for the host to enable player registration.</p>
+    `;
+    document.querySelector('.container').insertBefore(message, document.getElementById('loginSection'));
+    return message;
+}
+//----------------
+
+function disableBingoCard() {
+    const bingoCard = document.getElementById('bingoCard');
+    if (bingoCard) {
+        // Add visual indication that card is disabled
+        bingoCard.classList.add('disabled');
+        // Remove click handlers from all cells
+        const cells = bingoCard.getElementsByTagName('td');
+        for (let cell of cells) {
+            cell.onclick = null;
+            cell.style.cursor = 'not-allowed';
+        }
+    }
+}
+
+function showDeactivationMessage() {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'deactivation-message';
+    messageDiv.innerHTML = `
+        <p>Your bingo card has been deactivated by the host.</p>
+        <button onclick="window.location.reload()">Start New Game</button>
+    `;
+    document.body.appendChild(messageDiv);
+}
 
 
 
 
 function generateCard() {
+    if (!isLoginEnabled) {
+        alert('Login is currently disabled by the host. Please wait for the host to enable player login.');
+        return;
+    }
+
     const userId = getUserId();
     const playerNameInput = document.getElementById('playerName');
     const enteredName = playerNameInput.value.trim();
@@ -172,6 +311,8 @@ function generateCard() {
                     } else {
                         // Generate new card
                         createNewCard(userId, playerName);
+					socket.emit('playerActivated', playerName);
+					isPlayerActive = true;
                     }
                 })
                 .catch(error => console.error('Error:', error));
@@ -187,7 +328,7 @@ function loadExistingCard(playerData) {
     // Update player name display
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('playerNameDisplay').textContent = `${playerData.playerName}'s Bingo Card`;
-    document.getElementById('playerNameDisplay').style.display = 'block'; // Ensure visibility
+    document.getElementById('playerNameDisplay').style.display = 'block';
     
     // Show controls
     document.getElementById('chimeToggleContainer').classList.add('visible');
@@ -237,6 +378,10 @@ function loadExistingCard(playerData) {
     // Store current player name
     currentPlayerName = playerData.playerName;
     playerName = playerData.playerName;
+	    
+	// Reactivate the player and set active status
+    socket.emit('playerActivated', playerData.playerName);
+    isPlayerActive = true;
 }
 
 

@@ -10,6 +10,10 @@ const io = socketIo(server);
 
 // Use process.env.PORT instead of hardcoded port
 const port = process.env.PORT || 3000;
+// Add player state tracking
+let activePlayerSessions = new Map(); 
+// Add login state tracking
+let isLoginEnabled = false;
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -22,6 +26,8 @@ let layoutsData = {
 };
 
 io.on('connection', (socket) => {
+		// Immediately send current login status to new connections
+	socket.emit('loginStatusChanged', { enabled: isLoginEnabled });	
    socket.on('markNumber', ({ playerName, number, userId }) => {
     const player = playerCards.find(p => p.userId === userId);
         if (player) {
@@ -39,11 +45,20 @@ io.on('connection', (socket) => {
         
         io.emit('numberMarked', { playerName, number });
 		    });
-
+			
+ socket.on('playerDeactivated', (playerName) => {
+    activePlayerSessions.delete(playerName);
+    io.emit('playerDeactivated', playerName);
+  });	
+  
   // Add this new event
-  socket.on('numberCalled', (number) => {
-    io.emit('displayCalledNumber', number);
+   socket.on('numberCalled', (number) => {
+    // Only emit to active players
+    Array.from(activePlayerSessions.keys()).forEach(playerName => {
+      io.to(activePlayerSessions.get(playerName)).emit('displayCalledNumber', number);
+    });
   });
+  
    socket.emit('layoutsUpdate', layoutsData);
 
   // Update layouts and titles from index.html
@@ -64,7 +79,24 @@ socket.on('updateLayouts', (updatedData) => {
     io.emit('layoutsUpdate', layoutsData);
 });
 
+// Add player activation on card generation
+  socket.on('playerActivated', (playerName) => {
+    activePlayerSessions.set(playerName, socket.id);
+  });
 });
+// Add these new endpoints
+app.get('/loginStatus', (req, res) => {
+    res.json({ enabled: isLoginEnabled });
+});
+
+// Add endpoint to update login status
+app.post('/updateLoginStatus', (req, res) => {
+    const { enabled } = req.body;
+    isLoginEnabled = enabled;
+    io.emit('loginStatusChanged', { enabled });
+    res.sendStatus(200);
+});
+
 // Add this new endpoint to server.js
 app.get('/checkUsername/:username', (req, res) => {
     const username = req.params.username;
@@ -165,8 +197,10 @@ app.delete('/removePlayer/:playerName', (req, res) => {
     playerCards = playerCards.filter(player => player.playerName !== playerName);
     
     if (playerCards.length < initialLength) {
+        // Remove from active sessions
+        activePlayerSessions.delete(playerName);
         // Broadcast player removal to all clients
-        io.emit('playerRemoved', { playerName });
+        io.emit('playerDeactivated', playerName);
         res.status(200).send({ message: `Player ${playerName} removed successfully.` });
     } else {
         res.status(404).send({ message: `Player ${playerName} not found.` });
