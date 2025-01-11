@@ -365,9 +365,11 @@ function loadExistingCard(playerData) {
                 }
                 // Add click handler
                 cell.onclick = function() {
-                    this.classList.toggle('marked');
+                if (this.classList.contains('red-border')) {
+					this.classList.toggle('marked');
                     markNumber(number, playerData.playerName);
-                };
+                }
+				};
             }
             
             // Ensure cell is visible
@@ -432,8 +434,10 @@ function createNewCard(userId, playerName) {
                     cell.onclick = null; // Disable clicking
                 } else {
                     cell.onclick = function () {
+						if (this.classList.contains('red-border')) {
                         this.classList.toggle('marked');
                         markNumber(card[i][j], playerName);
+						}
                     };
                 }
             }

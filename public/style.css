@@ -188,7 +188,7 @@
     width: 100%;
     box-sizing: border-box;
     position: relative; /* To allow absolute positioning if needed */
-	margin-top: 15px
+	margin-top: 5px
 }
 
         #numberInput {
@@ -209,13 +209,13 @@
 
         .ball {
     margin: 0; /* Remove conflicting margins */
-    width: 115px;
-    height: 115px;
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
     background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500 70%, #b22222);
     font-weight: bold;
     color: white;
-    font-size: clamp(1.5rem, 5vw, 3rem);
+    font-size: 3.3rem;
     display: flex;
     justify-content: center;
     align-items: center;

@@ -28,12 +28,12 @@ function closeMenu() {
 
 // Function to show the About message
 function showAbout() {
-    alert("This is the About section. You can add information about your website or application here.");
+    showInfo("This is the About section. You can add information about your website or application here.", 'About Bingo');
 }
 
 // Function to show the Contact message
 function showContact() {
-    alert("This is the Contact section. You can add contact details or a contact form here.");
+    showInfo("This is the Contact section. You can add contact details or a contact form here.", 'Contact Developer');
 }
 
 // State management functions
@@ -42,18 +42,21 @@ function saveGameState() {
         calledNumbers: Array.from(calledNumbers),
         layouts: {
             layout1: {
+				title: document.querySelector('#layoutTitle1').textContent,
                 disabled: document.getElementById('layoutContainer1').classList.contains('disabled'),
                 winner: document.querySelector('#layoutContainer1 .winner-display')?.textContent || '',
                 highlightedCells: Array.from(document.querySelectorAll('#layout1 .highlighted')).map(cell => 
                     Array.from(cell.parentElement.children).indexOf(cell))
             },
             layout2: {
+				title: document.querySelector('#layoutTitle2').textContent,
                 disabled: document.getElementById('layoutContainer2').classList.contains('disabled'),
                 winner: document.querySelector('#layoutContainer2 .winner-display')?.textContent || '',
                 highlightedCells: Array.from(document.querySelectorAll('#layout2 .highlighted')).map(cell => 
                     Array.from(cell.parentElement.children).indexOf(cell))
             },
             layout3: {
+				title: document.querySelector('#layoutTitle3').textContent,
                 disabled: document.getElementById('layoutContainer3').classList.contains('disabled'),
                 winner: document.querySelector('#layoutContainer3 .winner-display')?.textContent || '',
                 highlightedCells: Array.from(document.querySelectorAll('#layout3 .highlighted')).map(cell => 
@@ -130,6 +133,23 @@ function loadGameState() {
     if (state.currentTab) {
         switchTab(state.currentTab);
     }
+	
+
+        // Restore layout titles
+        document.querySelector('#layoutTitle1').textContent = savedState.layouts.layout1.title;
+        document.querySelector('#layoutTitle2').textContent = savedState.layouts.layout2.title;
+        document.querySelector('#layoutTitle3').textContent = savedState.layouts.layout3.title;
+
+        // Restore winners
+        if (savedState.layouts.layout1.winner) {
+            createWinnerDisplay(document.getElementById('layoutContainer1'), savedState.layouts.layout1.winner);
+        }
+		if (savedState.layouts.layout2.winner) {
+            createWinnerDisplay(document.getElementById('layoutContainer2'), savedState.layouts.layout2.winner);
+        }
+		if (savedState.layouts.layout3.winner) {
+            createWinnerDisplay(document.getElementById('layoutContainer3'), savedState.layouts.layout3.winner);
+        }
 
     return true;
 }
@@ -213,7 +233,13 @@ document.addEventListener("click", function (event) {
 
 // Add a function to clear state if needed
 function resetGame() {
-    if (confirm('Are you sure you want to reset the game? This will clear all called numbers and layout states.')) {
+	
+    //if (confirm('Are you sure you want to reset the game? This will clear all called numbers and layout states.')) 
+	showConfirm(
+    "Confirm Reset Game",
+    "Are you sure you want to reset the game? This will clear all called numbers and layout states?",
+    () => {
+	
 		removeAllPlayerCards();
         // Clear local storage
         localStorage.removeItem('bingoGameState');
@@ -240,7 +266,7 @@ function resetGame() {
                 winnerDisplay.remove();
             }
         });
-        
+        resetLayouts();
         // Reset settings
         const speakCheckbox = document.getElementById('speakCheckbox');
         speakCheckbox.checked = false;
@@ -260,9 +286,10 @@ function resetGame() {
         switchTab('game-tab');
         
         // Save the cleared state
+		sendLayoutsToServer();
         saveGameState();
 		
-    }
+    });
 }
 
 function createBoard() {
@@ -378,83 +405,44 @@ document.querySelectorAll('.bingo-layout-title').forEach(title => {
 document.getElementById('speakCheckbox')?.addEventListener('change', saveGameState);
 document.getElementById('enableDataCheckbox')?.addEventListener('change', saveGameState);
 
-// Add this to your script.js file
 
-function createAlertDialog() {
-    // Create the alert container if it doesn't exist
-    let alertContainer = document.getElementById('custom-alert-container');
-    if (!alertContainer) {
-        alertContainer = document.createElement('div');
-        alertContainer.id = 'custom-alert-container';
-        document.body.appendChild(alertContainer);
-    }
-    return alertContainer;
+function resetLayouts() {
+    const layoutTitles = document.querySelectorAll('.bingo-layout-title');
+    const layoutContainers = document.querySelectorAll('.bingo-layout-container');
+
+    layoutTitles.forEach((title) => {
+        title.classList.remove('disabled');
+        title.style.color = ''; // Reset color
+        title.style.textDecoration = ''; // Remove strikethrough
+    });
+
+    layoutContainers.forEach((container) => {
+        container.classList.remove('disabled');
+        removeWinnerDisplay(container);
+    });
+
+    const updatedLayouts = {
+        layout1: {
+            title: document.querySelector('#layoutTitle1').textContent,
+            layoutHTML: document.querySelector('#layout1').innerHTML,
+            disabled: false,
+        },
+        layout2: {
+            title: document.querySelector('#layoutTitle2').textContent,
+            layoutHTML: document.querySelector('#layout2').innerHTML,
+            disabled: false,
+        },
+        layout3: {
+            title: document.querySelector('#layoutTitle3').textContent,
+            layoutHTML: document.querySelector('#layout3').innerHTML,
+            disabled: false,
+        },
+    };
+
+    socket.emit('updateLayouts', updatedLayouts);
 }
 
-function showAbout() {
-    const container = createAlertDialog();
-    container.innerHTML = `
-        <div class="modal-overlay">
-            <div class="custom-alert">
-                <div class="alert-header">
-                    <h2>About Mishail's Bingo</h2>
-                    <button class="close-button" onclick="closeAlert()">×</button>
-                </div>
-                <div class="alert-content">
-                    <p>Welcome to Mishail's Ultimate Bingo! This modern take on the classic game 
-                    features real-time multiplayer support, customizable layouts, and an 
-                    intuitive interface. Perfect for both casual players and serious bingo enthusiasts.</p>
-                    <br>
-                    <p>Features include:</p>
-                    <ul>
-                        <li>Auto-number generation</li>
-                        <li>Speech synthesis support</li>
-                        <li>Multiple prize layouts</li>
-                        <li>Online player tracking</li>
-                        <li>Mobile-friendly design</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    `;
-    container.style.display = 'block';
-    closeMenu();
-}
 
-function showContact() {
-    const container = createAlertDialog();
-    container.innerHTML = `
-        <div class="modal-overlay">
-            <div class="custom-alert">
-                <div class="alert-header">
-                    <h2>Contact Us</h2>
-                    <button class="close-button" onclick="closeAlert()">×</button>
-                </div>
-                <div class="alert-content">
-                    <p>Have questions or feedback? We likw to hear from you!</p>
-                    <p><center><strong>Email:</strong> mishail.oraha@gmail.com</center></p>
-                </div>
-            </div>
-        </div>
-    `;
-    container.style.display = 'block';
-    closeMenu();
-}
-
-function closeAlert() {
-    const container = document.getElementById('custom-alert-container');
-    if (container) {
-        container.style.display = 'none';
-    }
-}
-
-// Close alert when clicking outside the modal
-document.addEventListener('click', function(event) {
-    const container = document.getElementById('custom-alert-container');
-    if (container && event.target.classList.contains('modal-overlay')) {
-        closeAlert();
-    }
-});
 function createWinnerInput(layoutContainer) {
     // Create an input box if it doesn't exist for this layout
     let inputBox = layoutContainer.querySelector('.winner-input');
@@ -477,6 +465,7 @@ function createWinnerInput(layoutContainer) {
             }
         });
     }
+	saveGameState(); 
 }
 
 function createWinnerDisplay(layoutContainer, winnerName) {
@@ -492,6 +481,7 @@ function createWinnerDisplay(layoutContainer, winnerName) {
 
     // Make the div draggable
     makeDraggable(winnerDisplay);
+	saveGameState(); 
 }
 
 function removeWinnerInput(layoutContainer) {
@@ -543,9 +533,11 @@ function makeDraggable(element) {
 function handleCellClick(number) {
     if (calledNumbers.has(number)) {
         const letter = letters[Math.floor((number - 1) / 15)];
-        if (confirm(`Are you sure you want to recall number ${letter}${number}?`)) {
-            undoNumber(number);
-        }
+        showConfirm("Confirm Recalled Number",`Are you sure you want to recall number ${letter}${number}?`,
+        () => {
+			undoNumber(number);
+			  }
+		);
     }
 }
 function undoNumber(number) {
@@ -562,14 +554,16 @@ function undoNumber(number) {
     // Speak the undone number if speech is enabled
     speakNumber(`Recalled ${letter}. ${number} successfully.`);
 }
-
-        function callNumber(number) {
+//const originalCallNumber = callNumber;
+        
+		function callNumber(number) {
             if (number < 1 || number > 75) {
-                alert('Please enter a number between 1 and 75.');
+                showError("Please enter a number between 1 and 75.");
                 return;
             }
             if (calledNumbers.has(number)) {
-                alert(`The number ${number} has already been called.`);
+				
+                showError(`The number ${number} has already been called.`);
                 return;
             }
             calledNumbers.add(number);
@@ -584,8 +578,150 @@ function undoNumber(number) {
             speakNumber(`${letter}. ${number}`);
 			 socket.emit('numberCalled', number);
 			 saveGameState();
+			 
+// Call the original function first
+//    originalCallNumber.call(this, number);
+    
+    // Then check for winners
+    if (window.playerCards) {
+        window.playerCards.forEach(playerData => {
+            const winInfo = checkWinningPatterns(playerData.card, playerData.markedNumbers);
+            if (winInfo) {
+                handleWinner(winInfo);
+            }
+        });
+    }
+			 
+
         }
 
+// Add this helper function to check for any line (horizontal or vertical)
+function checkForLine(cardNumbers, markedNumbers) {
+    // Check horizontal lines
+    for (let row = 0; row < 5; row++) {
+        let lineComplete = true;
+        for (let col = 0; col < 5; col++) {
+            const index = row * 5 + col;
+            // Skip FREE space in center
+            if (index === 12) continue;
+            if (!markedNumbers.includes(cardNumbers[index])) {
+                lineComplete = false;
+                break;
+            }
+        }
+        if (lineComplete) return true;
+    }
+
+    // Check vertical lines
+    for (let col = 0; col < 5; col++) {
+        let lineComplete = true;
+        for (let row = 0; row < 5; row++) {
+            const index = row * 5 + col;
+            // Skip FREE space in center
+            if (index === 12) continue;
+            if (!markedNumbers.includes(cardNumbers[index])) {
+                lineComplete = false;
+                break;
+            }
+        }
+        if (lineComplete) return true;
+    }
+
+    return false;
+}
+
+// Update the checkWinningPatterns function to handle player name correctly
+function checkWinningPatterns(playerCard, markedNumbers) {
+    // Find the player's name
+    const player = window.playerCards?.find(p => 
+        p.card.toString() === playerCard.toString()
+    );
+    const playerName = player?.playerName;
+
+    // Convert player's card from 2D array to 1D array for easier checking
+    const cardNumbers = [];
+    for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+            cardNumbers.push(playerCard[i][j]);
+        }
+    }
+
+    // Get patterns for prizes 2 and 3 from layouts
+    const layout2Cells = Array.from(document.querySelectorAll('#layout2 .highlighted'))
+        .map(cell => Array.from(cell.parentElement.children).indexOf(cell));
+    const layout3Cells = Array.from(document.querySelectorAll('#layout3 .highlighted'))
+        .map(cell => Array.from(cell.parentElement.children).indexOf(cell));
+
+    // Check first prize (any line)
+    const layout1Container = document.getElementById('layoutContainer1');
+    if (!layout1Container.classList.contains('disabled')) {
+        if (checkForLine(cardNumbers, markedNumbers)) {
+            return {
+                pattern: document.querySelector('#layoutTitle1').textContent,
+                playerName: playerName,
+                layoutContainer: layout1Container
+            };
+        }
+    }
+
+    // Check second prize (X pattern)
+    const layout2Container = document.getElementById('layoutContainer2');
+    if (!layout2Container.classList.contains('disabled')) {
+        const pattern2Complete = layout2Cells.every(cellIndex => {
+            if (cellIndex === 12) return true;
+            return markedNumbers.includes(cardNumbers[cellIndex]);
+        });
+        if (pattern2Complete) {
+            return {
+                pattern: document.querySelector('#layoutTitle2').textContent,
+                playerName: playerName,
+                layoutContainer: layout2Container
+            };
+        }
+    }
+
+    // Check third prize (full house)
+    const layout3Container = document.getElementById('layoutContainer3');
+    if (!layout3Container.classList.contains('disabled')) {
+        const pattern3Complete = layout3Cells.every(cellIndex => {
+            if (cellIndex === 12) return true;
+            return markedNumbers.includes(cardNumbers[cellIndex]);
+        });
+        if (pattern3Complete) {
+            return {
+                pattern: document.querySelector('#layoutTitle3').textContent,
+                playerName: playerName,
+                layoutContainer: layout3Container
+            };
+        }
+    }
+
+    return null;
+}
+
+function handleWinner(winInfo) {
+    if (!winInfo.playerName) {
+        console.error('Player name is undefined:', winInfo);
+        return;
+    }
+    
+    // Create alert message
+    const message = `Congratulations! ${winInfo.playerName} has won ${winInfo.pattern}!`;
+    showSuccess(message, 'Winner');
+    
+    // Disable the winning pattern layout
+    winInfo.layoutContainer.classList.add('disabled');
+    
+    // Create winner display
+    createWinnerDisplay(winInfo.layoutContainer, winInfo.playerName);
+    
+    // Save game state
+    saveGameState();
+    
+    // speak the winner announcement
+        speakWinner(message);
+   
+}
         let isGenerating = false;
 
         function speakNumber(number) {
@@ -598,6 +734,15 @@ function undoNumber(number) {
                 window.speechSynthesis.speak(utterance);
             }
         }
+		
+		        function speakWinner(message) {
+            
+                const utterance = new SpeechSynthesisUtterance(message);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.6;
+                utterance.pitch = 1.5;
+                window.speechSynthesis.speak(utterance);
+                }
 		
 		function updateCalledNumbers() {
     const calledNumbersArray = Array.from(calledNumbers).reverse();
@@ -631,7 +776,7 @@ function undoNumber(number) {
         function generateRandomNumber() {
             if (isGenerating) return;
             if (calledNumbers.size >= 75) {
-                alert('All numbers have been called.');
+                showError("All numbers have been called.");
                 return;
             }
             isGenerating = true;
@@ -754,8 +899,6 @@ function clearPlayerCards() {
     const playerList = document.getElementById('playerCards');
     playerList.innerHTML = ''; // Clear all displayed data
 }
-
-
 //--------------------------------
 // Function to create a bingo card table with marked numbers
 function createBingoCardTable(card, playerName) {
@@ -836,11 +979,17 @@ function createResetButton() {
 }
 
 function removeAllPlayerCards() {
+	showConfirm(
+    "Confirm Remove All Players",
+    "Are you sure you want to remove all players from the game?",
+    () => {
   const playerCards = document.querySelectorAll('.player-card');
   playerCards.forEach(card => {
     const playerName = card.getAttribute('data-player');
     removePlayerCard(playerName);
   });
+	}
+	);
 }
 
 // Call this function after the player list tab is created
@@ -938,6 +1087,11 @@ function updatePlayerCard(playerName, number) {
                 const numberIndex = player.markedNumbers.indexOf(number);
                 if (numberIndex === -1) {
                     player.markedNumbers.push(number);
+                    // Check for winner after adding the number
+                    const winInfo = checkWinningPatterns(player.card, player.markedNumbers);
+                    if (winInfo) {
+                        handleWinner(winInfo);
+                    }
                 } else {
                     player.markedNumbers.splice(numberIndex, 1);
                 }
@@ -980,3 +1134,76 @@ document.querySelectorAll('.bingo-layout-container').forEach(container => {
 document.querySelectorAll('.bingo-layout-title').forEach(title => {
     title.addEventListener('input', sendLayoutsToServer); // Detect changes in titles
 });
+
+// Initialize Notiflix with custom settings
+Notiflix.Report.init({
+    width: '360px',
+    backgroundColor: '#f8f8f8',
+    borderRadius: '12px',
+    backOverlay: true,
+    backOverlayClickToClose: false,
+    fontFamily: 'inherit',
+    svgSize: '80px',
+    plainText: true,
+    titleFontSize: '18px',
+    titleMaxLength: 34,
+    messageFontSize: '15px',
+    buttonFontSize: '14px',
+    cssAnimation: true,
+    cssAnimationDuration: 300,
+    cssAnimationStyle: 'fade', // 'fade' | 'zoom'
+    
+    // Button styling
+    buttonBackground: '#2196f3',
+    buttonBorderRadius: '8px',
+    buttonFontSize: '14px',
+    buttonMaxLength: 34,
+});
+
+// Error message function
+function showError(message, title = 'Error') {
+    Notiflix.Report.failure(
+        title,
+        message,
+        'OK'
+    );
+}
+
+// Success message function
+function showSuccess(message, title = 'Success') {
+    Notiflix.Report.success(
+        title,
+        message,
+        'OK'
+    );
+}
+
+// Warning message function
+function showWarning(message, title = 'Warning') {
+    Notiflix.Report.warning(
+        title,
+        message,
+        'OK'
+    );
+}
+
+// Info message function
+function showInfo(message, title = 'Info') {
+    Notiflix.Report.info(
+        title,
+        message,
+        'OK'
+    );
+}
+
+// If you need confirmation dialogs
+function showConfirm(title, message, onConfirm) {
+    Notiflix.Confirm.show(
+        title,
+        message,
+        'Yes',
+        'No',
+        onConfirm,
+        () => {} // onCancel callback
+    );
+}
