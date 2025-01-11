@@ -180,22 +180,21 @@
             100% { transform: scale(1); background-color: #ff4500; opacity: 1; }
         }
 .controls {
-  display: flex;
-  align-items: center;
-  margin-top: -0.5vw;
-  gap: 0px;
-  width: 100%;
-  justify-content: flex-end;
-  padding-right: vw;
-  gap: 20px;
-  width: 100%;
-  justify-content: flex-start;
-  padding-left: 30vw;
-   margin-top: 0.5vw;
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    gap: 20px; /* Add spacing between children */
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative; /* To allow absolute positioning if needed */
+	margin-top: 15px
 }
 
         #numberInput {
-            padding: 10px;
+            position: absolute;
+			right: 0; /* Stick to the right */
+			padding: 10px;
             font-size: 1.5vw;
             width: 100px;
             text-align: center;
@@ -204,54 +203,57 @@
             background-color: rgba(255, 255, 255, 0.8);
             color: #333;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            margin-left: 20px;
-            margin-top: -2vw;
+            /*margin-left: 20px;
+            margin-top: -2vw;*/
         }
 
         .ball {
-            width: 115px;
-            height: 115px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500 70%, #b22222);
-            font-weight: bold;
-            color: white;
-            font-size: clamp(1.5rem, 5vw, 3rem);
-            margin-left: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset -5px -5px 10px rgba(255, 255, 255, 0.5), inset 5px 5px 15px rgba(0, 0, 0, 0.3), 0 8px 15px rgba(0, 0, 0, 0.4);
-            max-width: 115px;
-            max-height: 115px;
-            min-width: 105px;
-            min-height: 105px;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            margin-top: -1vw;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-			
-        }
-        .small-ball {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #d3d3d3, #808080 70%, #333);
-            font-weight: bold;
-            color: white;
-            font-size: clamp(1.5rem, 5vw, 1.5rem);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset -8px -8px 12px rgba(255, 255, 255, 0.5), inset 5px 5px 10px rgba(0, 0, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.5), 0 -2px 4px rgba(255, 255, 255, 0.3);
-            max-width: 70px;
-            max-height: 70px;
-            min-width: 70px;
-            min-height: 70px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            margin-top: -2vw;
-            position: relative;
-			
-        }
+    margin: 0; /* Remove conflicting margins */
+    width: 115px;
+    height: 115px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500 70%, #b22222);
+    font-weight: bold;
+    color: white;
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset -5px -5px 10px rgba(255, 255, 255, 0.5), 
+                inset 5px 5px 15px rgba(0, 0, 0, 0.3), 
+                0 8px 15px rgba(0, 0, 0, 0.4);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+	
+}
+
+.small-balls-container {
+    display: flex;
+    flex-direction: row; /* Align small balls in a row */
+    gap: 10px; /* Space between small balls */
+	margin-right: -300px; /* Space between large ball and small balls */
+
+}
+
+.small-ball {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #d3d3d3, #808080 70%, #333);
+    font-weight: bold;
+    color: white;
+    font-size: clamp(1.5rem, 5vw, 1.5rem);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset -8px -8px 12px rgba(255, 255, 255, 0.5), 
+                inset 5px 5px 10px rgba(0, 0, 0, 0.3), 
+                0 8px 16px rgba(0, 0, 0, 0.5), 
+                0 -2px 4px rgba(255, 255, 255, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+	
+}
 #qrCode {
 	display: none; 
 	margin: 0 auto;
@@ -321,12 +323,12 @@
 
 
 .bingo-layouts {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-left: -200px;
-            align-items: center;
-        }
+    position: absolute;
+    left: 0; /* Stick to the left */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 .bingo-layout-title {
             color: white;
             font-weight: bold;
@@ -354,8 +356,8 @@
         }
 
 .bingo-layout {
-  width: 100px;
-  height: 120px;
+  width: 90px;
+  height: 110px;
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   display: grid;
