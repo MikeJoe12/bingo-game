@@ -28,12 +28,12 @@ function closeMenu() {
 
 // Function to show the About message
 function showAbout() {
-    showInfo("This is the About section. You can add information about your website or application here.", 'About Bingo');
+    showInfo("Welcome to Mishail's Ultimate Bingo! This modern take on the classic game features real-time multiplayer support, customizable layouts, and intuitive interface. Perfect for both casual players and serious bingo enthusiasts.", 'About Bingo');
 }
 
 // Function to show the Contact message
 function showContact() {
-    showInfo("This is the Contact section. You can add contact details or a contact form here.", 'Contact Developer');
+    showInfo("Have questions or feedback? I like to hear from you! Email:mishail.oraha@gmail.com", 'Contact Developer');
 }
 
 // State management functions
@@ -240,7 +240,7 @@ function resetGame() {
     "Are you sure you want to reset the game? This will clear all called numbers and layout states?",
     () => {
 	
-		removeAllPlayerCards();
+		resetAllPlayerCards();
         // Clear local storage
         localStorage.removeItem('bingoGameState');
         
@@ -404,6 +404,30 @@ document.querySelectorAll('.bingo-layout-title').forEach(title => {
 // Add state management to settings changes
 document.getElementById('speakCheckbox')?.addEventListener('change', saveGameState);
 document.getElementById('enableDataCheckbox')?.addEventListener('change', saveGameState);
+
+
+function UpdateLayoutOnServer () {
+	const updatedLayouts = {
+            layout1: {
+                title: document.querySelector('#layoutTitle1').textContent,
+                layoutHTML: document.querySelector('#layout1').innerHTML,
+                disabled: document.getElementById('layoutContainer1').classList.contains('disabled'),
+            },
+            layout2: {
+                title: document.querySelector('#layoutTitle2').textContent,
+                layoutHTML: document.querySelector('#layout2').innerHTML,
+                disabled: document.getElementById('layoutContainer2').classList.contains('disabled'),
+            },
+            layout3: {
+                title: document.querySelector('#layoutTitle3').textContent,
+                layoutHTML: document.querySelector('#layout3').innerHTML,
+                disabled: document.getElementById('layoutContainer3').classList.contains('disabled'),
+            },
+        };
+
+        socket.emit('updateLayouts', updatedLayouts);
+	
+}
 
 
 function resetLayouts() {
@@ -706,12 +730,14 @@ function handleWinner(winInfo) {
     }
     
     // Create alert message
-    const message = `Congratulations! ${winInfo.playerName} has won ${winInfo.pattern}!`;
-    showSuccess(message, 'Winner');
+	const shuffleSound = new Audio('winner.mp3');
+	shuffleSound.play();
+    const message = `BINGO!! ${winInfo.playerName} has won the ${winInfo.pattern}!`;
+    showSuccess(message, 'BINGO!');
     
     // Disable the winning pattern layout
     winInfo.layoutContainer.classList.add('disabled');
-    
+    UpdateLayoutOnServer();
     // Create winner display
     createWinnerDisplay(winInfo.layoutContainer, winInfo.playerName);
     
@@ -990,6 +1016,16 @@ function removeAllPlayerCards() {
   });
 	}
 	);
+}
+
+function resetAllPlayerCards() {
+
+  const playerCards = document.querySelectorAll('.player-card');
+  playerCards.forEach(card => {
+    const playerName = card.getAttribute('data-player');
+    removePlayerCard(playerName);
+  });
+	
 }
 
 // Call this function after the player list tab is created
