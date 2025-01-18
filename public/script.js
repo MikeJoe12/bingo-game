@@ -3,17 +3,17 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
-    
+
     // Remove active class from all tabs
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.remove('active');
     });
-    
+
     // Show selected tab content and mark tab as active
     document.getElementById(tabName).classList.add('active');
     document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-	
-	saveGameState();
+
+    saveGameState();
 }
 // Function to toggle menu visibility
 function toggleMenu() {
@@ -42,24 +42,24 @@ function saveGameState() {
         calledNumbers: Array.from(calledNumbers),
         layouts: {
             layout1: {
-				title: document.querySelector('#layoutTitle1').textContent,
+                title: document.querySelector('#layoutTitle1').textContent,
                 disabled: document.getElementById('layoutContainer1').classList.contains('disabled'),
                 winner: document.querySelector('#layoutContainer1 .winner-display')?.textContent || '',
-                highlightedCells: Array.from(document.querySelectorAll('#layout1 .highlighted')).map(cell => 
+                highlightedCells: Array.from(document.querySelectorAll('#layout1 .highlighted')).map(cell =>
                     Array.from(cell.parentElement.children).indexOf(cell))
             },
             layout2: {
-				title: document.querySelector('#layoutTitle2').textContent,
+                title: document.querySelector('#layoutTitle2').textContent,
                 disabled: document.getElementById('layoutContainer2').classList.contains('disabled'),
                 winner: document.querySelector('#layoutContainer2 .winner-display')?.textContent || '',
-                highlightedCells: Array.from(document.querySelectorAll('#layout2 .highlighted')).map(cell => 
+                highlightedCells: Array.from(document.querySelectorAll('#layout2 .highlighted')).map(cell =>
                     Array.from(cell.parentElement.children).indexOf(cell))
             },
             layout3: {
-				title: document.querySelector('#layoutTitle3').textContent,
+                title: document.querySelector('#layoutTitle3').textContent,
                 disabled: document.getElementById('layoutContainer3').classList.contains('disabled'),
                 winner: document.querySelector('#layoutContainer3 .winner-display')?.textContent || '',
-                highlightedCells: Array.from(document.querySelectorAll('#layout3 .highlighted')).map(cell => 
+                highlightedCells: Array.from(document.querySelectorAll('#layout3 .highlighted')).map(cell =>
                     Array.from(cell.parentElement.children).indexOf(cell))
             }
         },
@@ -69,10 +69,10 @@ function saveGameState() {
         },
         lastCalledNumbers: [
             document.getElementById('calledBall').textContent,
-            document.getElementById('lastBall1').textContent,
-            document.getElementById('lastBall2').textContent,
+            document.getElementById('lastBall4').textContent,
             document.getElementById('lastBall3').textContent,
-            document.getElementById('lastBall4').textContent
+            document.getElementById('lastBall2').textContent,
+            document.getElementById('lastBall1').textContent
         ].filter(n => n),
         currentTab: document.querySelector('.tab.active')?.getAttribute('data-tab') || 'game-tab'
     };
@@ -92,6 +92,7 @@ function loadGameState() {
         const cell = document.getElementById(`${letter}${number}`);
         if (cell) cell.classList.add('called');
     });
+	updateCalledNumbers();
 
     // Restore layouts state
     Object.entries(state.layouts).forEach(([layoutId, layoutState]) => {
@@ -102,7 +103,7 @@ function loadGameState() {
                 createWinnerDisplay(container, layoutState.winner);
             }
         }
-        
+
         // Restore highlighted cells
         const layout = document.getElementById(layoutId);
         const cells = layout.getElementsByClassName('bingo-layout-cell');
@@ -117,15 +118,37 @@ function loadGameState() {
     if (state.settings.onlineEnabled) {
         startFetchingPlayerData();
         document.getElementById('playerList').style.display = 'block';
-		document.getElementById('qrCode').style.display = 'block';
+        document.getElementById('qrCode').style.display = 'block';
     }
 
-    // Restore last called numbers
-    if (state.lastCalledNumbers.length > 0) {
-        const [current, ...last] = state.lastCalledNumbers;
-        document.getElementById('calledBall').textContent = current;
-        ['lastBall1', 'lastBall2', 'lastBall3', 'lastBall4'].forEach((id, index) => {
-            if (last[index]) document.getElementById(id).textContent = last[index];
+ if (state.lastCalledNumbers.length > 0) {
+        const lastNumbers = state.lastCalledNumbers;
+        
+        // Update current number (calledBall)
+        if (lastNumbers[0]) {
+            document.getElementById('calledBall').textContent = lastNumbers[0];
+            const letter = letters[Math.floor((lastNumbers[0] - 1) / 15)];
+            document.getElementById('calledBall').setAttribute('data-letter', letter);
+            document.getElementById('calledBall').classList.add(`ball-${letter}`);
+        }
+
+        // Update small balls in correct order
+        const smallBallIds = ['lastBall4', 'lastBall3', 'lastBall2', 'lastBall1'];
+        smallBallIds.forEach((id, index) => {
+            const element = document.getElementById(id);
+            const number = lastNumbers[index + 1]; // Skip the first number (current ball)
+            
+            if (number) {
+                element.textContent = number;
+                const letter = letters[Math.floor((number - 1) / 15)];
+                element.setAttribute('data-letter', letter);
+                element.classList.add(`small-ball-${letter}`);
+            } else {
+                // Clear the element if no number exists
+                element.textContent = '';
+                element.setAttribute('data-letter', '');
+                element.classList.remove('small-ball-B', 'small-ball-I', 'small-ball-N', 'small-ball-G', 'small-ball-O');
+            }
         });
     }
 
@@ -133,30 +156,28 @@ function loadGameState() {
     if (state.currentTab) {
         switchTab(state.currentTab);
     }
-	
 
-        // Restore layout titles
-        document.querySelector('#layoutTitle1').textContent = savedState.layouts.layout1.title;
-        document.querySelector('#layoutTitle2').textContent = savedState.layouts.layout2.title;
-        document.querySelector('#layoutTitle3').textContent = savedState.layouts.layout3.title;
+    // Restore layout titles
+    document.querySelector('#layoutTitle1').textContent = savedState.layouts.layout1.title;
+    document.querySelector('#layoutTitle2').textContent = savedState.layouts.layout2.title;
+    document.querySelector('#layoutTitle3').textContent = savedState.layouts.layout3.title;
 
-        // Restore winners
-        if (savedState.layouts.layout1.winner) {
-            createWinnerDisplay(document.getElementById('layoutContainer1'), savedState.layouts.layout1.winner);
-        }
-		if (savedState.layouts.layout2.winner) {
-            createWinnerDisplay(document.getElementById('layoutContainer2'), savedState.layouts.layout2.winner);
-        }
-		if (savedState.layouts.layout3.winner) {
-            createWinnerDisplay(document.getElementById('layoutContainer3'), savedState.layouts.layout3.winner);
-        }
+    // Restore winners
+    if (savedState.layouts.layout1.winner) {
+        createWinnerDisplay(document.getElementById('layoutContainer1'), savedState.layouts.layout1.winner);
+    }
+    if (savedState.layouts.layout2.winner) {
+        createWinnerDisplay(document.getElementById('layoutContainer2'), savedState.layouts.layout2.winner);
+    }
+    if (savedState.layouts.layout3.winner) {
+        createWinnerDisplay(document.getElementById('layoutContainer3'), savedState.layouts.layout3.winner);
+    }
 
     return true;
 }
 
-
 // Function to hide the menu if clicking outside
-document.addEventListener("click", function (event) {
+document.addEventListener("click", function(event) {
     const menuIcon = document.querySelector(".menu-icon");
     const menuItems = document.getElementById("menuItems");
 
@@ -165,55 +186,55 @@ document.addEventListener("click", function (event) {
         closeMenu();
     }
 });
-		    // Add event listener for the Enter key on the password input
-    document.getElementById('password-input').addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            authenticateUser();  // Call authenticateUser if Enter is pressed
-        }
-    });
-	class SimpleAuth {
-            constructor() {
-                // Hardcoded correct password
-                this.CORRECT_PASSWORD = "Admin2025";
-            }
+// Add event listener for the Enter key on the password input
+document.getElementById('password-input').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        authenticateUser(); // Call authenticateUser if Enter is pressed
+    }
+});
+class SimpleAuth {
+    constructor() {
+        // Hardcoded correct password
+        this.CORRECT_PASSWORD = "Admin2025";
+    }
 
-            // Simple authentication method
-            authenticate(password) {
-                // Direct password comparison
-                return password === this.CORRECT_PASSWORD;
-            }
-        }
+    // Simple authentication method
+    authenticate(password) {
+        // Direct password comparison
+        return password === this.CORRECT_PASSWORD;
+    }
+}
 
-        // Initialize authentication
-        const simpleAuth = new SimpleAuth();
+// Initialize authentication
+const simpleAuth = new SimpleAuth();
 
-        // Authentication handler
-        function authenticateUser() {
-            const passwordInput = document.getElementById('password-input');
-            const errorMessage = document.getElementById('error-message');
-            const loginContainer = document.getElementById('login-container');
-            const mainContent = document.getElementById('main-content');
+// Authentication handler
+function authenticateUser() {
+    const passwordInput = document.getElementById('password-input');
+    const errorMessage = document.getElementById('error-message');
+    const loginContainer = document.getElementById('login-container');
+    const mainContent = document.getElementById('main-content');
 
-            // Attempt to authenticate
-            if (simpleAuth.authenticate(passwordInput.value)) {
-                // Hide login, show content
-                loginContainer.style.display = 'none';
-                mainContent.style.display = 'block';
-            } else {
-                // Show error message
-                errorMessage.textContent = "Incorrect password. Please try again.";
-                passwordInput.value = '';
-            }
-        }
+    // Attempt to authenticate
+    if (simpleAuth.authenticate(passwordInput.value)) {
+        // Hide login, show content
+        loginContainer.style.display = 'none';
+        mainContent.style.display = 'block';
+    } else {
+        // Show error message
+        errorMessage.textContent = "Incorrect password. Please try again.";
+        passwordInput.value = '';
+    }
+}
 
-        // Check authentication on page load
-        window.onload = function() {
-           // const loginContainer = document.getElementById('login-container');
-            const mainContent = document.getElementById('main-content');
+// Check authentication on page load
+window.onload = function() {
+    // const loginContainer = document.getElementById('login-container');
+    const mainContent = document.getElementById('main-content');
 
     //createBoard();
     const stateLoaded = loadGameState();
-    
+
     // If state was loaded successfully, skip login
     if (stateLoaded) {
         document.getElementById('login-container').style.display = 'none';
@@ -223,178 +244,180 @@ document.addEventListener("click", function (event) {
         mainContent.style.display = 'none';
     }
 };
-		const socket = io();
-	        const board = document.getElementById('bingoBoard');
-        const letters = ['B', 'I', 'N', 'G', 'O'];
-        let lastCalledCell = null;
-        let calledNumbers = new Set();
-        const shuffleSound = new Audio('shuffle.mp3');
+const socket = io();
+const board = document.getElementById('bingoBoard');
+const letters = ['B', 'I', 'N', 'G', 'O'];
+let lastCalledCell = null;
+let calledNumbers = new Set();
+const shuffleSound = new Audio('shuffle.mp3');
+const shuffleSound1 = new Audio('applause.mp3');
 
-
-// Add a function to clear state if needed
 function resetGame() {
-	
-    //if (confirm('Are you sure you want to reset the game? This will clear all called numbers and layout states.')) 
-	showConfirm(
-    "Confirm Reset Game",
-    "Are you sure you want to reset the game? This will clear all called numbers and layout states?",
-    () => {
-	
-		resetAllPlayerCards();
-        // Clear local storage
-        localStorage.removeItem('bingoGameState');
-        
-        // Reset called numbers
-        calledNumbers = new Set();
-        
-        // Clear all marked cells on the board
-        document.querySelectorAll('.cell.called, .cell.flashing-called').forEach(cell => {
-            cell.classList.remove('called', 'flashing-called');
-        });
-        
-        // Clear the called balls display
-        document.getElementById('calledBall').textContent = '';
-        ['lastBall1', 'lastBall2', 'lastBall3', 'lastBall4'].forEach(id => {
-            document.getElementById(id).textContent = '';
-        });
-        
-        // Reset layouts to their initial state
-        document.querySelectorAll('.bingo-layout-container').forEach(container => {
-            container.classList.remove('disabled');
-            const winnerDisplay = container.querySelector('.winner-display');
-            if (winnerDisplay) {
-                winnerDisplay.remove();
+    showConfirm(
+        "Confirm Reset Game",
+        "Are you sure you want to reset the game? This will clear all called numbers and layout states?",
+        () => {
+            // Reset all game state variables
+            calledNumbers = new Set();
+            currentNumber = null;
+            previousNumbers = [];
+            lastCalledCell = null;
+
+            // Clear ball displays
+            updateCalledBall(null);
+            ['lastBall1', 'lastBall2', 'lastBall3', 'lastBall4'].forEach(id => {
+                updateBallDisplay(document.getElementById(id), null);
+            });
+
+            // Clear board cells
+            document.querySelectorAll('.cell.called, .cell.flashing-called').forEach(cell => {
+                cell.classList.remove('called', 'flashing-called');
+                cell.style.backgroundColor = '';
+                cell.removeAttribute('data-letter');
+            });
+
+            // Reset layouts
+            document.querySelectorAll('.bingo-layout-container').forEach(container => {
+                container.classList.remove('disabled');
+                const winnerDisplay = container.querySelector('.winner-display');
+                if (winnerDisplay) {
+                    winnerDisplay.remove();
+                }
+            });
+            resetLayouts();
+
+            // Reset player cards if online mode is enabled
+            resetAllPlayerCards();
+
+            // Reset settings to default
+            document.getElementById('speakCheckbox').checked = false;
+            const enableDataCheckbox = document.getElementById('enableDataCheckbox');
+            if (enableDataCheckbox.checked) {
+                enableDataCheckbox.checked = false;
+                const event = new Event('change');
+                enableDataCheckbox.dispatchEvent(event);
             }
-        });
-        resetLayouts();
-        // Reset settings
-        const speakCheckbox = document.getElementById('speakCheckbox');
-        speakCheckbox.checked = false;
-        
-        // Handle enableDataCheckbox properly
-        const enableDataCheckbox = document.getElementById('enableDataCheckbox');
-        if (enableDataCheckbox.checked) {
-            // First update the checkbox state
-            enableDataCheckbox.checked = false;
-            
-            // Then trigger the change event to execute associated functionality
-            const event = new Event('change');
-            enableDataCheckbox.dispatchEvent(event);
+
+            // Switch back to game tab
+            switchTab('game-tab');
+
+            // Clear local storage completely
+            localStorage.removeItem('bingoGameState');
+
+            // Update server state
+            sendLayoutsToServer();
+
+            // Force update all displays
+            updateCalledNumbers();
         }
-        
-        // Switch back to game tab
-        switchTab('game-tab');
-        
-        // Save the cleared state
-		sendLayoutsToServer();
-        saveGameState();
-		
-    });
+    );
 }
 
 function createBoard() {
+    const letters = ['B', 'I', 'N', 'G', 'O'];
     for (let row = 0; row < letters.length; row++) {
         for (let col = 0; col < 16; col++) {
             const cell = document.createElement('div');
             cell.className = 'cell';
             if (col === 0) {
                 cell.classList.add('header');
+                cell.classList.add(`header-${letters[row]}`); // Add unique class for each header
                 cell.textContent = letters[row];
             } else {
                 const number = row * 15 + col;
                 if (number <= 75) {
                     cell.textContent = number;
                     cell.id = `${letters[row]}${number}`;
+                    cell.classList.add(`cell-${letters[row]}`); // Add class for column color
                     cell.addEventListener('click', () => handleCellClick(number));
                 }
             }
             board.appendChild(cell);
         }
     }
-	createBingoLayouts();
-	sendLayoutsToServer();
+    createBingoLayouts();
+    sendLayoutsToServer();
 }
 
-       function createBingoLayouts() {
-            const layouts = document.querySelectorAll('.bingo-layout');
-            layouts.forEach((layout, index) => {
-                for (let i = 0; i < 25; i++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'bingo-layout-cell';
-                    
-                    // Handle special initial highlighting
-                    if (index === 2) {
-                        // Third Prize layout: highlight all cells
-                        cell.classList.add('highlighted');
-                    } else if (index === 0) {
-                        // Second Prize layout: highlight center column
-                        const centerColumnIndexes = [2, 7, 12, 17, 22];
-                        if (centerColumnIndexes.includes(i)) {
-                            cell.classList.add('highlighted');
-                        }
-                    }
-					else if (index === 1) {
-                        // Second Prize layout: highlight center column
-                        const centerColumnIndexes = [0, 4, 6, 8, 12, 16, 18, 20, 24];
-                        if (centerColumnIndexes.includes(i)) {
-                            cell.classList.add('highlighted');
-                        }
-                    }					
-                    
-                    // Free space
-                    cell.textContent = i === 12 ? 'FREE' : '';
-                    
-                    cell.addEventListener('click', () => {
-                        const layoutContainer = layout.closest('.bingo-layout-container');
-                        if (!layoutContainer.classList.contains('disabled')) {
-                            cell.classList.toggle('highlighted');
-							saveGameState(); // Save state after cell toggle
-                        }
-                    });
-                    
-                    layout.appendChild(cell);
+function createBingoLayouts() {
+    const layouts = document.querySelectorAll('.bingo-layout');
+    layouts.forEach((layout, index) => {
+        for (let i = 0; i < 25; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'bingo-layout-cell';
+
+            // Handle special initial highlighting
+            if (index === 2) {
+                // Third Prize layout: highlight all cells
+                cell.classList.add('highlighted');
+            } else if (index === 0) {
+                // Second Prize layout: highlight center column
+                const centerColumnIndexes = [2, 7, 12, 17, 22];
+                if (centerColumnIndexes.includes(i)) {
+                    cell.classList.add('highlighted');
+                }
+            } else if (index === 1) {
+                // Second Prize layout: highlight center column
+                const centerColumnIndexes = [0, 4, 6, 8, 12, 16, 18, 20, 24];
+                if (centerColumnIndexes.includes(i)) {
+                    cell.classList.add('highlighted');
+                }
+            }
+
+            // Free space
+            cell.textContent = i === 12 ? 'FREE' : '';
+
+            cell.addEventListener('click', () => {
+                const layoutContainer = layout.closest('.bingo-layout-container');
+                if (!layoutContainer.classList.contains('disabled')) {
+                    cell.classList.toggle('highlighted');
+                    saveGameState(); // Save state after cell toggle
                 }
             });
 
-const layoutTitles = document.querySelectorAll('.bingo-layout-title');
-
-layoutTitles.forEach((title) => {
-    title.addEventListener('click', () => {
-        const layoutContainer = title.closest('.bingo-layout-container');
-        const isDisabled = layoutContainer.classList.toggle('disabled');
-        title.classList.toggle('disabled', isDisabled);
-
-        // Check if layout is disabled and update UI
-        if (isDisabled) {
-            createWinnerInput(layoutContainer);
-        } else {
-            removeWinnerDisplay(layoutContainer);
+            layout.appendChild(cell);
         }
-
-        // Send updated layouts to the server
-        const updatedLayouts = {
-            layout1: {
-                title: document.querySelector('#layoutTitle1').textContent,
-                layoutHTML: document.querySelector('#layout1').innerHTML,
-                disabled: document.getElementById('layoutContainer1').classList.contains('disabled'),
-            },
-            layout2: {
-                title: document.querySelector('#layoutTitle2').textContent,
-                layoutHTML: document.querySelector('#layout2').innerHTML,
-                disabled: document.getElementById('layoutContainer2').classList.contains('disabled'),
-            },
-            layout3: {
-                title: document.querySelector('#layoutTitle3').textContent,
-                layoutHTML: document.querySelector('#layout3').innerHTML,
-                disabled: document.getElementById('layoutContainer3').classList.contains('disabled'),
-            },
-        };
-
-        socket.emit('updateLayouts', updatedLayouts);
     });
-});
 
-document.querySelectorAll('.bingo-layout-title').forEach(title => {
+    const layoutTitles = document.querySelectorAll('.bingo-layout-title');
+
+    layoutTitles.forEach((title) => {
+        title.addEventListener('click', () => {
+            const layoutContainer = title.closest('.bingo-layout-container');
+            const isDisabled = layoutContainer.classList.toggle('disabled');
+            title.classList.toggle('disabled', isDisabled);
+
+            // Check if layout is disabled and update UI
+            if (isDisabled) {
+                createWinnerInput(layoutContainer);
+            } else {
+                removeWinnerDisplay(layoutContainer);
+            }
+
+            // Send updated layouts to the server
+            const updatedLayouts = {
+                layout1: {
+                    title: document.querySelector('#layoutTitle1').textContent,
+                    layoutHTML: document.querySelector('#layout1').innerHTML,
+                    disabled: document.getElementById('layoutContainer1').classList.contains('disabled'),
+                },
+                layout2: {
+                    title: document.querySelector('#layoutTitle2').textContent,
+                    layoutHTML: document.querySelector('#layout2').innerHTML,
+                    disabled: document.getElementById('layoutContainer2').classList.contains('disabled'),
+                },
+                layout3: {
+                    title: document.querySelector('#layoutTitle3').textContent,
+                    layoutHTML: document.querySelector('#layout3').innerHTML,
+                    disabled: document.getElementById('layoutContainer3').classList.contains('disabled'),
+                },
+            };
+
+            socket.emit('updateLayouts', updatedLayouts);
+        });
+    });
+
+    document.querySelectorAll('.bingo-layout-title').forEach(title => {
         title.addEventListener('click', () => {
             setTimeout(saveGameState, 100); // Save state after layout changes
         });
@@ -405,30 +428,28 @@ document.querySelectorAll('.bingo-layout-title').forEach(title => {
 document.getElementById('speakCheckbox')?.addEventListener('change', saveGameState);
 document.getElementById('enableDataCheckbox')?.addEventListener('change', saveGameState);
 
+function UpdateLayoutOnServer() {
+    const updatedLayouts = {
+        layout1: {
+            title: document.querySelector('#layoutTitle1').textContent,
+            layoutHTML: document.querySelector('#layout1').innerHTML,
+            disabled: document.getElementById('layoutContainer1').classList.contains('disabled'),
+        },
+        layout2: {
+            title: document.querySelector('#layoutTitle2').textContent,
+            layoutHTML: document.querySelector('#layout2').innerHTML,
+            disabled: document.getElementById('layoutContainer2').classList.contains('disabled'),
+        },
+        layout3: {
+            title: document.querySelector('#layoutTitle3').textContent,
+            layoutHTML: document.querySelector('#layout3').innerHTML,
+            disabled: document.getElementById('layoutContainer3').classList.contains('disabled'),
+        },
+    };
 
-function UpdateLayoutOnServer () {
-	const updatedLayouts = {
-            layout1: {
-                title: document.querySelector('#layoutTitle1').textContent,
-                layoutHTML: document.querySelector('#layout1').innerHTML,
-                disabled: document.getElementById('layoutContainer1').classList.contains('disabled'),
-            },
-            layout2: {
-                title: document.querySelector('#layoutTitle2').textContent,
-                layoutHTML: document.querySelector('#layout2').innerHTML,
-                disabled: document.getElementById('layoutContainer2').classList.contains('disabled'),
-            },
-            layout3: {
-                title: document.querySelector('#layoutTitle3').textContent,
-                layoutHTML: document.querySelector('#layout3').innerHTML,
-                disabled: document.getElementById('layoutContainer3').classList.contains('disabled'),
-            },
-        };
+    socket.emit('updateLayouts', updatedLayouts);
 
-        socket.emit('updateLayouts', updatedLayouts);
-	
 }
-
 
 function resetLayouts() {
     const layoutTitles = document.querySelectorAll('.bingo-layout-title');
@@ -466,7 +487,6 @@ function resetLayouts() {
     socket.emit('updateLayouts', updatedLayouts);
 }
 
-
 function createWinnerInput(layoutContainer) {
     // Create an input box if it doesn't exist for this layout
     let inputBox = layoutContainer.querySelector('.winner-input');
@@ -489,7 +509,7 @@ function createWinnerInput(layoutContainer) {
             }
         });
     }
-	saveGameState(); 
+    saveGameState();
 }
 
 function createWinnerDisplay(layoutContainer, winnerName) {
@@ -505,7 +525,7 @@ function createWinnerDisplay(layoutContainer, winnerName) {
 
     // Make the div draggable
     makeDraggable(winnerDisplay);
-	saveGameState(); 
+    saveGameState();
 }
 
 function removeWinnerInput(layoutContainer) {
@@ -524,9 +544,12 @@ function removeWinnerDisplay(layoutContainer) {
 }
 
 function makeDraggable(element) {
-    let offsetX = 0, offsetY = 0, mouseX = 0, mouseY = 0;
+    let offsetX = 0,
+        offsetY = 0,
+        mouseX = 0,
+        mouseY = 0;
 
-    element.onmousedown = function (e) {
+    element.onmousedown = function(e) {
         e.preventDefault();
         mouseX = e.clientX;
         mouseY = e.clientY;
@@ -551,61 +574,94 @@ function makeDraggable(element) {
     }
 }
 
-
-        
-
 function handleCellClick(number) {
     if (calledNumbers.has(number)) {
         const letter = letters[Math.floor((number - 1) / 15)];
-        showConfirm("Confirm Recalled Number",`Are you sure you want to recall number ${letter}${number}?`,
-        () => {
-			undoNumber(number);
-			  }
-		);
+        showConfirm(
+            "Confirm Recalled Number",
+            `Are you sure you want to recall number ${letter}${number}?`,
+            () => {
+                undoNumber(number);
+            }
+        );
+    } else {
+        handleNewNumber(number);
+        callNumber(number);
+
     }
 }
+
 function undoNumber(number) {
     if (!calledNumbers.has(number)) return;
 
+    // Remove the number from calledNumbers set
     calledNumbers.delete(number);
+
+    // Remove visual marking from the board
     let letter = letters[Math.floor((number - 1) / 15)];
     const cell = document.getElementById(`${letter}${number}`);
     cell.classList.remove('called', 'flashing-called');
 
-    // Update the called balls display
-    updateCalledNumbers();
+    // Get all currently called numbers in reverse chronological order
+    const calledNumbersArray = Array.from(calledNumbers).reverse();
+
+    // Update the displays
+    if (calledNumbersArray.length === 0) {
+        // If no numbers left, clear everything
+        updateCalledBall(null);
+        ['lastBall1', 'lastBall2', 'lastBall3', 'lastBall4'].forEach(id => {
+            updateBallDisplay(document.getElementById(id), null);
+        });
+    } else {
+        // Update main ball with the most recent number
+        updateCalledBall(calledNumbersArray[0]);
+
+        // Update small balls in sequence (shift left)
+        const smallBalls = ['lastBall4', 'lastBall3', 'lastBall2', 'lastBall1'];
+        smallBalls.forEach((id, index) => {
+            const ballNumber = calledNumbersArray[index + 1]; // +1 because index 0 is now the main ball
+            updateBallDisplay(document.getElementById(id), ballNumber);
+        });
+    }
 
     // Speak the undone number if speech is enabled
     speakNumber(`Recalled ${letter}. ${number} successfully.`);
+
+    // Update current number and previous numbers arrays
+    currentNumber = calledNumbersArray[0] || null;
+    previousNumbers = calledNumbersArray.slice(1, 5);
+
+    // Save the game state
+    saveGameState();
 }
 //const originalCallNumber = callNumber;
-        
-		function callNumber(number) {
-            if (number < 1 || number > 75) {
-                showError("Please enter a number between 1 and 75.");
-                return;
-            }
-            if (calledNumbers.has(number)) {
-				
-                showError(`The number ${number} has already been called.`);
-                return;
-            }
-            calledNumbers.add(number);
-            let letter = letters[Math.floor((number - 1) / 15)];
-            const cell = document.getElementById(`${letter}${number}`);
-            if (lastCalledCell) {
-                lastCalledCell.classList.remove('flashing-called');
-            }
-            cell.classList.add('called', 'flashing-called');
-            lastCalledCell = cell;
-            updateCalledNumbers(`${letter} ${number}`);
-            speakNumber(`${letter}. ${number}`);
-			 socket.emit('numberCalled', number);
-			 saveGameState();
-			 
-// Call the original function first
-//    originalCallNumber.call(this, number);
-    
+
+function callNumber(number) {
+    if (number < 1 || number > 75) {
+        showError("Please enter a number between 1 and 75.");
+        return;
+    }
+    if (calledNumbers.has(number)) {
+
+        showError(`The number ${number} has already been called.`);
+        return;
+    }
+    calledNumbers.add(number);
+    let letter = letters[Math.floor((number - 1) / 15)];
+    const cell = document.getElementById(`${letter}${number}`);
+    if (lastCalledCell) {
+        lastCalledCell.classList.remove('flashing-called');
+    }
+    cell.classList.add('called', 'flashing-called');
+    lastCalledCell = cell;
+    // updateCalledNumbers(`${letter} ${number}`);
+    speakNumber(`${letter}. ${number}`);
+    socket.emit('numberCalled', number);
+    saveGameState();
+
+    // Call the original function first
+    //    originalCallNumber.call(this, number);
+
     // Then check for winners
     if (window.playerCards) {
         window.playerCards.forEach(playerData => {
@@ -615,9 +671,8 @@ function undoNumber(number) {
             }
         });
     }
-			 
 
-        }
+}
 
 // Add this helper function to check for any line (horizontal or vertical)
 function checkForLine(cardNumbers, markedNumbers) {
@@ -657,7 +712,7 @@ function checkForLine(cardNumbers, markedNumbers) {
 // Update the checkWinningPatterns function to handle player name correctly
 function checkWinningPatterns(playerCard, markedNumbers) {
     // Find the player's name
-    const player = window.playerCards?.find(p => 
+    const player = window.playerCards?.find(p =>
         p.card.toString() === playerCard.toString()
     );
     const playerName = player?.playerName;
@@ -728,49 +783,61 @@ function handleWinner(winInfo) {
         console.error('Player name is undefined:', winInfo);
         return;
     }
-    
+    shuffleSound1.play();
     // Create alert message
-	const shuffleSound = new Audio('winner.mp3');
-	shuffleSound.play();
     const message = `BINGO!! ${winInfo.playerName} has won the ${winInfo.pattern}!`;
     showSuccess(message, 'BINGO!');
-    
+
     // Disable the winning pattern layout
     winInfo.layoutContainer.classList.add('disabled');
     UpdateLayoutOnServer();
     // Create winner display
     createWinnerDisplay(winInfo.layoutContainer, winInfo.playerName);
-    
+
     // Save game state
     saveGameState();
-    
-    // speak the winner announcement
-        speakWinner(message);
-   
-}
-        let isGenerating = false;
 
-        function speakNumber(number) {
-            const speakCheckbox = document.getElementById('speakCheckbox');
-            if (speakCheckbox.checked && 'speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(number);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.6;
-                utterance.pitch = 1.5;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-		
-		        function speakWinner(message) {
-            
-                const utterance = new SpeechSynthesisUtterance(message);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.6;
-                utterance.pitch = 1.5;
-                window.speechSynthesis.speak(utterance);
-                }
-		
-		function updateCalledNumbers() {
+    // speak the winner announcement
+    speakWinner(message);
+
+}
+let isGenerating = false;
+
+function speakNumber(number) {
+    const speakCheckbox = document.getElementById('speakCheckbox');
+    if (speakCheckbox.checked && 'speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(number);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.6;
+        utterance.pitch = 1.5;
+        window.speechSynthesis.speak(utterance);
+    }
+}
+
+function speakWinner(message) {
+
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.6;
+    utterance.pitch = 1.5;
+    window.speechSynthesis.speak(utterance);
+}
+
+// Update the updateCalledNumbers function to handle empty state
+function updateCalledNumbers() {
+    if (calledNumbers.size === 0) {
+        // Clear all ball displays when there are no called numbers
+        document.getElementById('calledBall').textContent = '';
+        ['lastBall1', 'lastBall2', 'lastBall3', 'lastBall4'].forEach(id => {
+            const element = document.getElementById(id);
+            element.textContent = '';
+            element.setAttribute('data-letter', '');
+            element.classList.remove('ball-B', 'ball-I', 'ball-N', 'ball-G', 'ball-O',
+                'small-ball-B', 'small-ball-I', 'small-ball-N', 'small-ball-G', 'small-ball-O');
+        });
+        return;
+    }
+
     const calledNumbersArray = Array.from(calledNumbers).reverse();
     const lastBalls = [
         document.getElementById('lastBall4'),
@@ -779,43 +846,23 @@ function handleWinner(winInfo) {
         document.getElementById('lastBall1')
     ];
 
-    for (let i = 0; i < lastBalls.length; i++) {
+    lastBalls.forEach((ball, i) => {
         if (i < calledNumbersArray.length) {
             const number = calledNumbersArray[i];
             const letter = letters[Math.floor((number - 1) / 15)];
-            lastBalls[i].textContent = `${letter}${number}`;
+            updateBallDisplay(ball, number);
         } else {
-            lastBalls[i].textContent = '';
+            updateBallDisplay(ball, null);
         }
-    }
+    });
 
     const calledBall = document.getElementById('calledBall');
     if (calledNumbersArray.length > 0) {
-        const number = calledNumbersArray[0];
-        const letter = letters[Math.floor((number - 1) / 15)];
-        calledBall.textContent = `${letter}${number}`;
+        updateBallDisplay(calledBall, calledNumbersArray[0]);
     } else {
-        calledBall.textContent = '';
+        updateBallDisplay(calledBall, null);
     }
 }
-
-        function generateRandomNumber() {
-            if (isGenerating) return;
-            if (calledNumbers.size >= 75) {
-                showError("All numbers have been called.");
-                return;
-            }
-            isGenerating = true;
-            flashBoard();
-            setTimeout(() => {
-                let randomNumber;
-                do {
-                    randomNumber = Math.floor(Math.random() * 75) + 1;
-                } while (calledNumbers.has(randomNumber));
-                callNumber(randomNumber);
-                isGenerating = false;
-            }, 3000);
-        }
 
 function flashBoard() {
     if (speakCheckbox.checked) {
@@ -843,22 +890,32 @@ function flashBoard() {
     }, 3000);
 }
 
-
-        function updateCalledNumbers(newNumber) {
-    const lastBalls = [
-        document.getElementById('lastBall4'),
-        document.getElementById('lastBall3'),
-        document.getElementById('lastBall2'),
-        document.getElementById('lastBall1')
-    ];
-    for (let i = lastBalls.length - 1; i > 0; i--) {
-        lastBalls[i].textContent = lastBalls[i - 1].textContent || '';
+function updateCalledNumbers() {
+    if (calledNumbers.size === 0) {
+        // Clear all ball displays when there are no called numbers
+        currentNumber = null;
+        previousNumbers = [];
+        updateCalledBall(null);
+        ['lastBall', 'lastBall2', 'lastBall3', 'lastBall4'].forEach(id => {
+            updateBallDisplay(document.getElementById(id), null);
+        });
+        return;
     }
-    lastBalls[0].textContent = document.getElementById('calledBall').textContent;
-    document.getElementById('calledBall').textContent = newNumber;
+
+    const calledNumbersArray = Array.from(calledNumbers).reverse();
+    currentNumber = calledNumbersArray[0];
+    previousNumbers = calledNumbersArray.slice(1, 5);
+
+    // Update main ball
+    updateCalledBall(currentNumber);
+
+    // Update small balls
+    ['lastBall1', 'lastBall2', 'lastBall3', 'lastBall4'].forEach((id, index) => {
+        updateBallDisplay(document.getElementById(id), previousNumbers[index]);
+    });
 }
 
-document.getElementById('generateButton').addEventListener('click', generateRandomNumber);
+//document.getElementById('generateButton').addEventListener('click', generateRandomNumber);
 document.getElementById('numberInput').addEventListener('keydown', function(event) {
     if (event.key === 'Enter') {
         const number = parseInt(this.value);
@@ -867,44 +924,56 @@ document.getElementById('numberInput').addEventListener('keydown', function(even
     }
 });
 
+// Event listeners
+document.getElementById('numberInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        const number = parseInt(this.value);
+        if (number >= 1 && number <= 75) {
+            handleNewNumber(number);
+            this.value = ''; // Clear input after use
+        }
+    }
+});
 createBoard();
 
 const enableDataCheckbox = document.getElementById('enableDataCheckbox');
 const playerList = document.getElementById('playerList');
 
 enableDataCheckbox.addEventListener('change', () => {
-	const isEnabled = enableDataCheckbox.checked;
+    const isEnabled = enableDataCheckbox.checked;
     if (enableDataCheckbox.checked) {
         startFetchingPlayerData(); // Start periodic fetching
-		playerList.style.display = 'block'; // Show the player list
-		qrCode.style.display = 'block';
+        playerList.style.display = 'block'; // Show the player list
+        qrCode.style.display = 'block';
     } else {
         stopFetchingPlayerData(); // Stop periodic fetching
-		playerList.style.display = 'none'; // Hide the player list
-		qrCode.style.display = 'none';
+        playerList.style.display = 'none'; // Hide the player list
+        qrCode.style.display = 'none';
         clearPlayerCards(); // Optional: clear existing data
     }
-	
-  // Update server with new login status
+
+    // Update server with new login status
     fetch('/updateLoginStatus', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ enabled: isEnabled })
+        body: JSON.stringify({
+            enabled: isEnabled
+        })
     });
 
     if (isEnabled) {
         startFetchingPlayerData();
         playerList.style.display = 'block';
-		qrCode.style.display = 'block';
+        qrCode.style.display = 'block';
     } else {
         stopFetchingPlayerData();
         playerList.style.display = 'none';
-		qrCode.style.display = 'none';
+        qrCode.style.display = 'none';
         clearPlayerCards();
     }
-});	
+});
 
 let fetchInterval = null;
 
@@ -950,15 +1019,15 @@ function createBingoCardTable(card, playerName) {
         for (let j = 0; j < 5; j++) {
             const cell = row.insertCell();
             const number = card[i][j];
-            
+
             // Handle the center FREE space
             if (i === 2 && j === 2) {
                 cell.textContent = 'FREE';
-                cell.classList.add('free-space', 'marked');  // Add both classes
+                cell.classList.add('free-space', 'marked'); // Add both classes
             } else {
                 cell.textContent = number;
                 cell.setAttribute('data-number', number);
-                
+
                 // Mark the cell if the number is in markedNumbers
                 if (markedNumbers.includes(number)) {
                     cell.classList.add('marked');
@@ -986,7 +1055,7 @@ function createBingoCardTable(card, playerName) {
     const playerDiv = document.createElement('div');
     playerDiv.className = 'player-card';
     playerDiv.setAttribute('data-player', playerName);
-    
+
     // Append header and table to the player div
     playerDiv.appendChild(playerHeader);
     playerDiv.appendChild(table);
@@ -995,37 +1064,37 @@ function createBingoCardTable(card, playerName) {
 }
 
 function createResetButton() {
-  const resetButton = document.createElement('button');
-  resetButton.textContent = 'Reset All Players';
-  resetButton.id = 'resetAllPlayers';
-  resetButton.onclick = removeAllPlayerCards;
-  
-  const playerList = document.getElementById('playerList');
-  playerList.insertBefore(resetButton, playerList.firstChild);
+    const resetButton = document.createElement('button');
+    resetButton.textContent = 'Reset All Players';
+    resetButton.id = 'resetAllPlayers';
+    resetButton.onclick = removeAllPlayerCards;
+
+    const playerList = document.getElementById('playerList');
+    playerList.insertBefore(resetButton, playerList.firstChild);
 }
 
 function removeAllPlayerCards() {
-	showConfirm(
-    "Confirm Remove All Players",
-    "Are you sure you want to remove all players from the game?",
-    () => {
-  const playerCards = document.querySelectorAll('.player-card');
-  playerCards.forEach(card => {
-    const playerName = card.getAttribute('data-player');
-    removePlayerCard(playerName);
-  });
-	}
-	);
+    showConfirm(
+        "Confirm Remove All Players",
+        "Are you sure you want to remove all players from the game?",
+        () => {
+            const playerCards = document.querySelectorAll('.player-card');
+            playerCards.forEach(card => {
+                const playerName = card.getAttribute('data-player');
+                removePlayerCard(playerName);
+            });
+        }
+    );
 }
 
 function resetAllPlayerCards() {
 
-  const playerCards = document.querySelectorAll('.player-card');
-  playerCards.forEach(card => {
-    const playerName = card.getAttribute('data-player');
-    removePlayerCard(playerName);
-  });
-	
+    const playerCards = document.querySelectorAll('.player-card');
+    playerCards.forEach(card => {
+        const playerName = card.getAttribute('data-player');
+        removePlayerCard(playerName);
+    });
+
 }
 
 // Call this function after the player list tab is created
@@ -1038,38 +1107,40 @@ function removePlayerCard(playerName) {
 
 function removePlayerFromServer(playerName) {
     fetch(`/removePlayer/${playerName}`, {
-        method: 'DELETE'
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log(data.message); // Log success message
-        // Now remove from display only if successfully removed from server
-        const playerCard = document.querySelector(`.player-card[data-player="${playerName}"]`);
-        if (playerCard) {
-            playerCard.remove(); // Removes the player card from the display
-        }
-    })
-    .catch(error => console.error('Error:', error));
-	closeCard(playerName);
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data.message); // Log success message
+            // Now remove from display only if successfully removed from server
+            const playerCard = document.querySelector(`.player-card[data-player="${playerName}"]`);
+            if (playerCard) {
+                playerCard.remove(); // Removes the player card from the display
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    closeCard(playerName);
 }
 
 function closeCard(playerName) {
-  fetch(`/deactivatePlayer/${playerName}`, { method: 'POST' })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data.message);
-      // Remove the card from the view
-      const card = document.querySelector(`[data-player-name="${playerName}"]`);
-      if (card) {
-        card.remove();
-      }
-    })
-    .catch(error => console.error('Error:', error));
+    fetch(`/deactivatePlayer/${playerName}`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.message);
+            // Remove the card from the view
+            const card = document.querySelector(`[data-player-name="${playerName}"]`);
+            if (card) {
+                card.remove();
+            }
+        })
+        .catch(error => console.error('Error:', error));
 }
 
 // Update the fetchPlayerCards function to store the server data
@@ -1078,13 +1149,13 @@ function fetchPlayerCards() {
     if (!enableDataCheckbox.checked) {
         return;
     }
-    
+
     fetch('/getCards')
         .then(response => response.json())
         .then(data => {
             // Store the player cards data globally
             window.playerCards = data;
-            
+
             const playerList = document.getElementById('playerCards');
             data.forEach(player => {
                 let existingCard = document.querySelector(`.player-card[data-player="${player.playerName}"]`);
@@ -1112,14 +1183,14 @@ function updatePlayerCard(playerName, number) {
         const cell = playerCard.querySelector(`td[data-number="${number}"]`);
         if (cell) {
             cell.classList.toggle('marked');
-            
+
             // Update the playerCards array in memory
             const player = window.playerCards?.find(p => p.playerName === playerName);
             if (player) {
                 if (!player.markedNumbers) {
                     player.markedNumbers = [];
                 }
-                
+
                 const numberIndex = player.markedNumbers.indexOf(number);
                 if (numberIndex === -1) {
                     player.markedNumbers.push(number);
@@ -1136,14 +1207,16 @@ function updatePlayerCard(playerName, number) {
     }
 }
 
-      
-        setInterval(fetchPlayerCards, 5000);
+setInterval(fetchPlayerCards, 5000);
 
-        socket.on('numberMarked', ({ playerName, number }) => {
-            updatePlayerCard(playerName, number);
-        });
-		
-		function sendLayoutsToServer() {
+socket.on('numberMarked', ({
+    playerName,
+    number
+}) => {
+    updatePlayerCard(playerName, number);
+});
+
+function sendLayoutsToServer() {
     const updatedLayouts = {
         layout1: {
             title: document.querySelector('#layoutTitle1').textContent,
@@ -1188,12 +1261,22 @@ Notiflix.Report.init({
     cssAnimation: true,
     cssAnimationDuration: 300,
     cssAnimationStyle: 'fade', // 'fade' | 'zoom'
-    
+
     // Button styling
     buttonBackground: '#2196f3',
     buttonBorderRadius: '8px',
     buttonFontSize: '14px',
     buttonMaxLength: 34,
+});
+// Add keyboard event listener for notifications
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        // Get any visible Notiflix dialog buttons
+        const visibleButton = document.querySelector('.notiflix-report-button');
+        if (visibleButton) {
+            visibleButton.click(); // Simulate click on the button
+        }
+    }
 });
 
 // Error message function
@@ -1243,3 +1326,103 @@ function showConfirm(title, message, onConfirm) {
         () => {} // onCancel callback
     );
 }
+// Store the current and previous numbers
+let currentNumber = null;
+let previousNumbers = [];
+
+function getBingoLetter(number) {
+    if (number <= 15) return 'B';
+    if (number <= 30) return 'I';
+    if (number <= 45) return 'N';
+    if (number <= 60) return 'G';
+    return 'O';
+}
+
+function updateBallDisplay(element, number) {
+    if (!element) return;
+
+    // Clear if no number
+    if (!number) {
+        element.textContent = '';
+        element.setAttribute('data-letter', '');
+        element.classList.remove('ball-B', 'ball-I', 'ball-N', 'ball-G', 'ball-O',
+            'small-ball-B', 'small-ball-I', 'small-ball-N', 'small-ball-G', 'small-ball-O');
+        return;
+    }
+
+    // Set number and letter
+    const letter = getBingoLetter(number);
+    element.textContent = number;
+    element.setAttribute('data-letter', letter);
+
+    // Apply correct color class
+    element.classList.remove('ball-B', 'ball-I', 'ball-N', 'ball-G', 'ball-O',
+        'small-ball-B', 'small-ball-I', 'small-ball-N', 'small-ball-G', 'small-ball-O');
+
+    if (element.id === 'calledBall') {
+        element.classList.add(`ball-${letter}`);
+    } else {
+        element.classList.add(`small-ball-${letter}`);
+    }
+}
+
+function updateCalledBall(number) {
+    const calledBall = document.getElementById('calledBall');
+    updateBallDisplay(calledBall, number);
+}
+
+function updateSmallBalls() {
+    // Update each small ball with the previous numbers
+    for (let i = 0; i < 4; i++) {
+        const ballElement = document.getElementById(`lastBall${4-i}`);
+        updateBallDisplay(ballElement, previousNumbers[i]);
+    }
+}
+
+function handleNewNumber(number) {
+    if (!number) return;
+
+    // Validate number
+    number = parseInt(number);
+    if (number < 1 || number > 75) return;
+
+    // If there's a current number, add it to previous numbers
+    if (currentNumber !== null) {
+        previousNumbers.unshift(currentNumber);
+        if (previousNumbers.length > 4) {
+            previousNumbers.pop();
+        }
+    }
+
+    // Set the new current number
+    currentNumber = number;
+
+    // Update displays
+    updateCalledBall(currentNumber);
+    updateSmallBalls();
+}
+
+// Add this to your existing generateButton click handler
+document.getElementById('generateButton').addEventListener('click', function() {
+    // Replace this with your actual random number generation logic
+    const number = Math.floor(Math.random() * 75) + 1;
+
+    //	if (isGenerating) return;
+    if (number.size >= 75) {
+        showError("All numbers have been called.");
+        return;
+    }
+    isGenerating = true;
+    flashBoard();
+    setTimeout(() => {
+        let number;
+        do {
+            number = Math.floor(Math.random() * 75) + 1;
+            //const number = Math.floor(Math.random() * 75) + 1;
+        } while (calledNumbers.has(number));
+        handleNewNumber(number);
+        callNumber(number);
+        isGenerating = false;
+    }, 3000);
+
+});

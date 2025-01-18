@@ -189,6 +189,9 @@ app.get('/player', (req, res) => {
 app.get('/Shuffle.mp3', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'Shuffle.mp3'));
 });
+app.get('/applause.mp3', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'applause.mp3'));
+});
 // Modified removePlayer endpoint
 app.delete('/removePlayer/:playerName', (req, res) => {
     const playerName = req.params.playerName;
