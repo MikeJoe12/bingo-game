@@ -50,14 +50,19 @@ function generateTableCells() {
 		if (!isPlayerActive) return;
         if (number >= 1 && number <= 15) {
             document.getElementById('calledNumber').textContent = `B ${number}`;
+			document.getElementById('calledNumberContainer').style.cssText = 'background: radial-gradient(circle at 30% 30%, #4169E1, #0000CD); color: white;'; 
         } else if (number >= 16 && number <= 30) {
             document.getElementById('calledNumber').textContent = `I ${number}`;
+			document.getElementById('calledNumberContainer').style.cssText = 'background: radial-gradient(circle at 30% 30%, #FF4500, #DC143C); color: white;'; 
         } else if (number >= 31 && number <= 45) {
             document.getElementById('calledNumber').textContent = `N ${number}`;
+			document.getElementById('calledNumberContainer').style.cssText = 'background: white; color: black;';
         } else if (number >= 46 && number <= 60) {
             document.getElementById('calledNumber').textContent = `G ${number}`;
+			document.getElementById('calledNumberContainer').style.cssText = 'background: radial-gradient(circle at 30% 30%, #32CD32, #006400); color: white;'; 
         } else if (number >= 61 && number <= 75) {
             document.getElementById('calledNumber').textContent = `O ${number}`;
+			document.getElementById('calledNumberContainer').style.cssText = 'background: radial-gradient(circle at 30% 30%, #FFD700, #DAA520); color: black;';
         }
   
         const cells = document.querySelectorAll('#bingoCard td');

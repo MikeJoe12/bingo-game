@@ -134,21 +134,24 @@
         }
 
         #calledNumberContainer {
-            width: 120px;
-            height: 120px;
-            margin-bottom: 20px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #ff6347, #ff4500 70%, #b22222);
-            font-weight: bold;
-            color: white;
-            font-size: 3rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset -5px -5px 10px rgba(255, 255, 255, 0.5), inset 5px 5px 15px rgba(0, 0, 0, 0.3), 0 8px 15px rgba(0, 0, 0, 0.4);
-            text-overflow: ellipsis;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+			    position: relative;
+    border-radius: 50%;
+   /* border: 1.5px solid #000;*/
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+	width: 120px;
+    height: 120px;
+    font-size: 3rem;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+    margin-bottom: 20px;
+    background: white; color: black;        
+    justify-content: center;
+    align-items: center;   
+    overflow: hidden;
+            
         }
 
         #bingoCard {

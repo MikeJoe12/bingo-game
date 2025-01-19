@@ -1268,16 +1268,7 @@ Notiflix.Report.init({
     buttonFontSize: '14px',
     buttonMaxLength: 34,
 });
-// Add keyboard event listener for notifications
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Enter') {
-        // Get any visible Notiflix dialog buttons
-        const visibleButton = document.querySelector('.notiflix-report-button');
-        if (visibleButton) {
-            visibleButton.click(); // Simulate click on the button
-        }
-    }
-});
+
 
 // Error message function
 function showError(message, title = 'Error') {
