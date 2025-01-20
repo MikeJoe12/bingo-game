@@ -38,13 +38,15 @@
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
             background: white;
         }
-.ball-display span {
-    transform: translateY(20px); /* Move the number down */
-}
+
+        .ball-display span {
+            transform: translateY(20px);
+        }
+
         .ball-display::before {
             content: attr(data-letter);
             position: absolute;
-			font-weight: bold;
+            font-weight: bold;
             top: 5%;
             font-size: 4rem;
         }
@@ -70,10 +72,15 @@
             font-weight: bold;
             color: white;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, opacity 0.3s;
         }
 
-        .button:active {
+        .button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button:active:not(:disabled) {
             transform: scale(0.95);
         }
 
@@ -96,7 +103,7 @@
     <div class="container">
         <div class="ball-display" id="ballDisplay" data-letter=""></div>
         <button class="button" id="triggerBtn">Generate Number</button>
-        <button class="button" id="releaseBtn">Display</button>
+        <button class="button" id="releaseBtn" disabled>Display</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -116,24 +123,26 @@
             return 'O';
         }
 
-function updateBallDisplay(number) {
-    if (!number) {
-        ballDisplay.innerHTML = '';
-        ballDisplay.setAttribute('data-letter', '');
-        ballDisplay.className = 'ball-display';
-        return;
-    }
+        function updateBallDisplay(number) {
+            if (!number) {
+                ballDisplay.innerHTML = '';
+                ballDisplay.setAttribute('data-letter', '');
+                ballDisplay.className = 'ball-display';
+                return;
+            }
 
-    const letter = getBingoLetter(number);
-    ballDisplay.innerHTML = `<span>${number}</span>`;
-    ballDisplay.setAttribute('data-letter', letter);
-    ballDisplay.className = `ball-display ball-${letter}`;
-}
+            const letter = getBingoLetter(number);
+            ballDisplay.innerHTML = `<span>${number}</span>`;
+            ballDisplay.setAttribute('data-letter', letter);
+            ballDisplay.className = `ball-display ball-${letter}`;
+        }
 
         // When Generate Number is clicked
         triggerBtn.addEventListener('click', () => {
             socket.emit('startGeneration');
             updateBallDisplay(null);
+            triggerBtn.disabled = true;
+            releaseBtn.disabled = false;
         });
 
         // When Release is clicked
@@ -142,6 +151,8 @@ function updateBallDisplay(number) {
                 socket.emit('releaseNumber', currentNumber);
                 currentNumber = null;
                 updateBallDisplay(null);
+                releaseBtn.disabled = true;
+                triggerBtn.disabled = false;
             }
         });
 
