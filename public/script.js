@@ -1,3 +1,14 @@
+const socket = io();
+const board = document.getElementById('bingoBoard');
+const letters = ['B', 'I', 'N', 'G', 'O'];
+let lastCalledCell = null;
+let calledNumbers = new Set();
+const shuffleSound = new Audio('shuffle.mp3');
+const shuffleSound1 = new Audio('applause.mp3');
+
+// Add at the top of your script.js, after socket initialization
+let generatedNumber = null;
+
 function switchTab(tabName) {
     // Hide all tab contents
     document.querySelectorAll('.tab-content').forEach(content => {
@@ -65,6 +76,7 @@ function saveGameState() {
         },
         settings: {
             speechEnabled: document.getElementById('speakCheckbox').checked,
+			shuffleEnabled: document.getElementById('shuffleCheckbox').checked,
             onlineEnabled: document.getElementById('enableDataCheckbox').checked
         },
         lastCalledNumbers: [
@@ -114,6 +126,7 @@ function loadGameState() {
 
     // Restore settings
     document.getElementById('speakCheckbox').checked = state.settings.speechEnabled;
+	document.getElementById('shuffleCheckbox').checked = state.settings.shuffleEnabled;
     document.getElementById('enableDataCheckbox').checked = state.settings.onlineEnabled;
     if (state.settings.onlineEnabled) {
         startFetchingPlayerData();
@@ -244,19 +257,42 @@ window.onload = function() {
         mainContent.style.display = 'none';
     }
 };
-const socket = io();
-const board = document.getElementById('bingoBoard');
-const letters = ['B', 'I', 'N', 'G', 'O'];
-let lastCalledCell = null;
-let calledNumbers = new Set();
-const shuffleSound = new Audio('shuffle.mp3');
-const shuffleSound1 = new Audio('applause.mp3');
+
+// Add separate handlers for controller interaction
+socket.on('startGeneration', () => {
+    if (calledNumbers.size >= 75) {
+        showError("All numbers have been called.");
+        return;
+    }
+    
+    flashBoard();
+    setTimeout(() => {
+        let number;
+        do {
+            number = Math.floor(Math.random() * 75) + 1;
+        } while (calledNumbers.has(number));
+        
+        generatedNumber = number;
+        socket.emit('numberGenerated', number);
+    }, 3000);
+});
+
+socket.on('releaseNumber', (number) => {
+    if (number === generatedNumber) {
+        handleNewNumber(number);
+        callNumber(number);
+        generatedNumber = null;
+    }
+});
+
 
 function resetGame() {
     showConfirm(
         "Confirm Reset Game",
         "Are you sure you want to reset the game? This will clear all called numbers and layout states?",
         () => {
+			// Emit reset event to server
+            socket.emit('resetGame');
             // Reset all game state variables
             calledNumbers = new Set();
             currentNumber = null;
@@ -291,6 +327,7 @@ function resetGame() {
 
             // Reset settings to default
             document.getElementById('speakCheckbox').checked = false;
+			document.getElementById('shuffleCheckbox').checked = false;
             const enableDataCheckbox = document.getElementById('enableDataCheckbox');
             if (enableDataCheckbox.checked) {
                 enableDataCheckbox.checked = false;
@@ -426,6 +463,7 @@ function createBingoLayouts() {
 
 // Add state management to settings changes
 document.getElementById('speakCheckbox')?.addEventListener('change', saveGameState);
+document.getElementById('shuffleCheckbox')?.addEventListener('change', saveGameState);
 document.getElementById('enableDataCheckbox')?.addEventListener('change', saveGameState);
 
 function UpdateLayoutOnServer() {
@@ -865,10 +903,10 @@ function updateCalledNumbers() {
 }
 
 function flashBoard() {
-    if (speakCheckbox.checked) {
+    if (document.getElementById('shuffleCheckbox').checked) {
         shuffleSound.play();
     }
-
+	
     const cells = document.querySelectorAll('.cell:not(.called):not(.header)');
     const maxFlashes = Math.min(cells.length, 10); // Flash only as many cells as available
     const flashInterval = setInterval(() => {
@@ -1393,27 +1431,20 @@ function handleNewNumber(number) {
     updateSmallBalls();
 }
 
-// Add this to your existing generateButton click handler
 document.getElementById('generateButton').addEventListener('click', function() {
-    // Replace this with your actual random number generation logic
-    const number = Math.floor(Math.random() * 75) + 1;
-
-    //	if (isGenerating) return;
-    if (number.size >= 75) {
+    if (calledNumbers.size >= 75) {
         showError("All numbers have been called.");
         return;
     }
-    isGenerating = true;
+    
     flashBoard();
     setTimeout(() => {
         let number;
         do {
             number = Math.floor(Math.random() * 75) + 1;
-            //const number = Math.floor(Math.random() * 75) + 1;
         } while (calledNumbers.has(number));
+        
         handleNewNumber(number);
         callNumber(number);
-        isGenerating = false;
     }, 3000);
-
 });

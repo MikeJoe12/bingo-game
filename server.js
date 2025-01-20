@@ -7,6 +7,7 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+let calledNumbers = []; 																
 
 // Use process.env.PORT instead of hardcoded port
 const port = process.env.PORT || 3000;
@@ -45,19 +46,44 @@ io.on('connection', (socket) => {
         
         io.emit('numberMarked', { playerName, number });
 		    });
-			
+socket.on('requestCalledNumbers', () => {
+        socket.emit('allCalledNumbers', calledNumbers);
+    });
+socket.on('startGeneration', () => {
+        io.emit('startGeneration');
+    });
+
+    socket.on('numberGenerated', (number) => {
+        // Send generated number to all controllers
+        io.emit('numberGenerated', number);
+    });
+
+    socket.on('releaseNumber', (number) => {
+        io.emit('releaseNumber', number);
+    });
+	
  socket.on('playerDeactivated', (playerName) => {
     activePlayerSessions.delete(playerName);
     io.emit('playerDeactivated', playerName);
   });	
   
   // Add this new event
-   socket.on('numberCalled', (number) => {
-    // Only emit to active players
-    Array.from(activePlayerSessions.keys()).forEach(playerName => {
-      io.to(activePlayerSessions.get(playerName)).emit('displayCalledNumber', number);
+    socket.on('numberCalled', (number) => {
+        if (!calledNumbers.includes(number)) {
+            calledNumbers.push(number);
+        }
+        io.emit('displayCalledNumber', number);
     });
-  });
+socket.on('resetGame', () => {
+    // Clear called numbers array
+    calledNumbers = [];
+    
+    // Notify all clients (including players) about the reset
+    io.emit('gameReset');
+    
+    // Force disconnect all players
+    io.emit('forceDisconnect');
+});
   
    socket.emit('layoutsUpdate', layoutsData);
 
