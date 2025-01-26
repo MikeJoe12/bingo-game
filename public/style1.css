@@ -179,9 +179,7 @@
 			margin-left: -15px;
         }
 
-        #bingoCard th {
-            background-color: var(--primary-color);
-            color: white;
+#bingoCard th {
             padding: 10px;
             border-radius: 8px;
             font-weight: 900;
@@ -189,6 +187,31 @@
             text-transform: uppercase;
             width: 20%;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        #bingoCard th:nth-child(1) { /* B */
+            background: radial-gradient(circle at 30% 30%, #4169E1, #0000CD);
+            color: white;
+        }
+
+        #bingoCard th:nth-child(2) { /* I */
+            background: radial-gradient(circle at 30% 30%, #FF4500, #DC143C);
+            color: white;
+        }
+
+        #bingoCard th:nth-child(3) { /* N */
+            background-color: white;
+            color: black;
+        }
+
+        #bingoCard th:nth-child(4) { /* G */
+            background: radial-gradient(circle at 30% 30%, #32CD32, #006400);
+            color: white;
+        }
+
+        #bingoCard th:nth-child(5) { /* O */
+            background: radial-gradient(circle at 30% 30%, #FFD700, #DAA520);
+            color: black;
         }
 
         #bingoCard td {
