@@ -4,6 +4,93 @@ let playerName = '';
 let currentPlayerName = '';
 const socket = io();
 
+
+// Screen Wake Lock support for mobile player page
+let wakeLock = null;
+let keepAwakeEnabled = true;
+
+async function enableWakeLock() {
+    const wakeLockToggle = document.getElementById('wakeLockToggle');
+
+    if (!wakeLockToggle) return;
+
+    if (!('wakeLock' in navigator)) {
+        console.warn('Screen Wake Lock API is not supported by this browser.');
+        wakeLockToggle.checked = false;
+        keepAwakeEnabled = false;
+        return;
+    }
+
+    try {
+        if (wakeLock) return;
+
+        wakeLock = await navigator.wakeLock.request('screen');
+        keepAwakeEnabled = true;
+        wakeLockToggle.checked = true;
+        console.log('Screen Wake Lock enabled.');
+
+        wakeLock.addEventListener('release', () => {
+            wakeLock = null;
+            console.log('Screen Wake Lock released.');
+        });
+    } catch (error) {
+        console.warn('Screen Wake Lock request failed:', error);
+        wakeLockToggle.checked = false;
+        keepAwakeEnabled = false;
+    }
+}
+
+async function disableWakeLock() {
+    keepAwakeEnabled = false;
+
+    if (wakeLock) {
+        try {
+            await wakeLock.release();
+        } catch (error) {
+            console.warn('Screen Wake Lock release failed:', error);
+        }
+        wakeLock = null;
+    }
+
+    const wakeLockToggle = document.getElementById('wakeLockToggle');
+    if (wakeLockToggle) wakeLockToggle.checked = false;
+}
+
+function showPlayerOptions() {
+    const playerOptions = document.getElementById('playerOptions');
+    const chimeToggleContainer = document.getElementById('chimeToggleContainer');
+    const wakeLockToggle = document.getElementById('wakeLockToggle');
+
+    if (playerOptions) playerOptions.classList.add('visible');
+    if (chimeToggleContainer) chimeToggleContainer.classList.add('visible');
+    if (wakeLockToggle) wakeLockToggle.checked = true;
+}
+
+function setupWakeLockControls() {
+    const wakeLockToggle = document.getElementById('wakeLockToggle');
+    if (!wakeLockToggle) return;
+
+    wakeLockToggle.checked = true;
+    keepAwakeEnabled = true;
+
+    wakeLockToggle.addEventListener('change', () => {
+        if (wakeLockToggle.checked) {
+            enableWakeLock();
+        } else {
+            disableWakeLock();
+        }
+    });
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (keepAwakeEnabled && document.visibilityState === 'visible' && !wakeLock) {
+        enableWakeLock();
+    }
+});
+
+window.addEventListener('load', setupWakeLockControls);
+
+
 // Helper functions
 function getMarkedNumbers() {
     return JSON.parse(localStorage.getItem('markedNumbers') || '[]');
@@ -184,7 +271,8 @@ function loadExistingCard(playerData) {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('playerNameDisplay').textContent = `${playerData.playerName}'s Bingo Card`;
     document.getElementById('playerNameDisplay').style.display = 'block';
-    document.getElementById('chimeToggleContainer').classList.add('visible');
+    showPlayerOptions();
+    if (keepAwakeEnabled) enableWakeLock();
     
     const table = document.getElementById('bingoCard');
     table.innerHTML = '';
@@ -262,6 +350,11 @@ function generateCard() {
         return;
     }
 
+    // Request Wake Lock immediately from the login button click.
+    // Mobile browsers are more reliable when this happens during the user action.
+    showPlayerOptions();
+    if (keepAwakeEnabled) enableWakeLock();
+
     fetch(`/checkUsername/${encodeURIComponent(enteredName)}`)
         .then(response => response.json())
         .then(data => {
@@ -290,7 +383,8 @@ function generateCard() {
             playerName = enteredName;
 
             chimeSound.play();
-            document.getElementById('chimeToggleContainer').classList.add('visible');
+            showPlayerOptions();
+            if (keepAwakeEnabled) enableWakeLock();
             
             fetch(`/checkExistingCard/${userId}`)
                 .then(response => response.json())

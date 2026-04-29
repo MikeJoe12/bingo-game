@@ -6,6 +6,72 @@
     <title>Mishail Bingo</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="style1.css">	
+
+<style>
+/* Wake Lock player controls: stacked, hidden until login, aligned with Sound */
+.player-options {
+    position: absolute;
+    left: -5px;
+    top: 145px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 20;
+}
+
+.player-options.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.player-options .player-option-row,
+.player-options .chime-toggle,
+.player-options .wake-lock-control {
+    position: static !important;
+    left: auto !important;
+    margin-top: 0 !important;
+    opacity: 1 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    width: max-content;
+    white-space: nowrap;
+    color: #1f2937;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.player-options input[type="checkbox"] {
+    margin: 0;
+    width: auto;
+    flex: 0 0 auto;
+}
+
+.player-options label {
+    margin: 0;
+    cursor: pointer;
+}
+
+@media (max-width: 480px) {
+    .player-options {
+        left: -5px;
+        top: 138px;
+        gap: 2px;
+    }
+
+    .player-options .player-option-row,
+    .player-options .chime-toggle,
+    .player-options .wake-lock-control {
+        font-size: 0.78rem;
+        gap: 7px;
+    }
+}
+</style>
 </head>
 <body>
 <h1 class="page-title">Mishail Bingo</h1>
@@ -36,9 +102,15 @@
 		<div id="calledNumberContainer">
           <span id="calledNumber"></span>
         </div>
-				<div class="chime-toggle" id="chimeToggleContainer">
-            <input type="checkbox" id="chimeToggle" checked>
-            <label for="chimeToggle">Sound</label>
+        <div class="player-options" id="playerOptions">
+            <div class="player-option-row chime-toggle" id="chimeToggleContainer">
+                <input type="checkbox" id="chimeToggle" checked>
+                <label for="chimeToggle">Sound</label>
+            </div>
+            <div class="player-option-row wake-lock-control" id="wakeLockContainer">
+                <input type="checkbox" id="wakeLockToggle" checked>
+                <label for="wakeLockToggle">Keep Screen Awake</label>
+            </div>
         </div>
     </div>
     <div class="input-group" id="loginSection">
