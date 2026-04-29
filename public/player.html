@@ -8,15 +8,15 @@
 	<link rel="stylesheet" href="style1.css">	
 
 <style>
-/* Player options: hidden until login, aligned cleanly on the left */
+/* Player options: hidden until login, aligned left, no overlap */
 .player-options {
     position: absolute;
-    left: 20px;
-    top: 175px;
+    left: 8px;
+    top: 162px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 8px;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -28,53 +28,62 @@
     pointer-events: auto;
 }
 
-.player-option-row {
-    display: flex;
+/* Critical: override old .chime-toggle absolute positioning from style1.css */
+.player-options .chime-toggle,
+.player-options .wake-lock-control,
+.player-options .player-option-row {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 1 !important;
+    display: grid !important;
+    grid-template-columns: 22px auto;
+    column-gap: 10px;
     align-items: center;
-    justify-content: flex-start;
-    gap: 10px;
-    margin: 0;
-    padding: 0;
-    line-height: 1;
+    justify-items: start;
+    width: max-content;
     white-space: nowrap;
     color: #1f2937;
     font-weight: 600;
     font-size: 0.95rem;
+    line-height: 1.1;
 }
 
-.player-option-row input[type="checkbox"] {
-    margin: 0;
+.player-options input[type="checkbox"] {
+    margin: 0 !important;
     width: 20px;
     height: 20px;
-    flex: 0 0 20px;
-    vertical-align: middle;
+    justify-self: start;
     accent-color: #1a73e8;
 }
 
-.player-option-row label {
-    margin: 0;
-    padding: 0;
+.player-options label {
+    margin: 0 !important;
+    padding: 0 !important;
     line-height: 1.1;
     cursor: pointer;
-    display: inline-block;
 }
 
 @media (max-width: 480px) {
     .player-options {
-        left: 18px;
-        top: 182px;
-        gap: 8px;
+        left: 8px;
+        top: 158px;
+        gap: 7px;
     }
 
-    .player-option-row {
-        gap: 10px;
+    .player-options .chime-toggle,
+    .player-options .wake-lock-control,
+    .player-options .player-option-row {
+        grid-template-columns: 20px auto;
+        column-gap: 9px;
         font-size: 0.82rem;
     }
 
-    .player-option-row input[type="checkbox"] {
+    .player-options input[type="checkbox"] {
         width: 18px;
         height: 18px;
-        flex: 0 0 18px;
     }
 }
 </style>
