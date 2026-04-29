@@ -3,153 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo Controller</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
-
-        .ball-display {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            margin: 40px auto;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 6rem;
-            font-weight: bold;
-            color: white;
-            position: relative;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
-            background: white;
-        }
-.ball-display span {
-    transform: translateY(20px); /* Move the number down */
-}
-        .ball-display::before {
-            content: attr(data-letter);
-            position: absolute;
-			font-weight: bold;
-            top: 5%;
-            font-size: 4rem;
-        }
-
-        .ball-display::after {
-            content: '';
-            position: absolute;
-            width: 20%;
-            height: 20%;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            top: 15%;
-            left: 15%;
-        }
-
-        .button {
-            width: 200px;
-            height: 100px;
-            margin: 20px;
-            border: none;
-            border-radius: 30px;
-            font-size: 2rem;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        .button:active {
-            transform: scale(0.95);
-        }
-
-        #triggerBtn {
-            background: linear-gradient(135deg, #ff6b6b, #ee5253);
-        }
-
-        #releaseBtn {
-            background: linear-gradient(135deg, #4cd137, #44bd32);
-        }
-
-        .ball-B { background: radial-gradient(circle at 30% 30%, #4169E1, #0000CD); }
-        .ball-I { background: radial-gradient(circle at 30% 30%, #FF4500, #DC143C); }
-        .ball-N { background: white; color: black; }
-        .ball-G { background: radial-gradient(circle at 30% 30%, #32CD32, #006400); }
-        .ball-O { background: radial-gradient(circle at 30% 30%, #FFD700, #DAA520); color: black; }
-    </style>
+    <title>Mishail Bingo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="style1.css">	
 </head>
 <body>
-    <div class="container">
-        <div class="ball-display" id="ballDisplay" data-letter=""></div>
-        <button class="button" id="triggerBtn">Generate Number</button>
-        <button class="button" id="releaseBtn">Display</button>
+<h1 class="page-title">Mishail Bingo</h1>
+ <div class="container">
+      <div class="called-number-container">
+        
+        
+<div id="bingo-layouts" class="bingo-layouts">
+    <!-- Third Prize -->
+    <div class="bingo-layout-container" id="layoutContainer1">
+        <div id="layoutTitle1" class="bingo-layout-title">3rd Prize</div>
+        <div id="layout1" class="bingo-layout">${generateTableCells()}</div>
     </div>
+    <!-- Second Prize -->
+    <div class="bingo-layout-container" id="layoutContainer2">
+        <div id="layoutTitle2" class="bingo-layout-title">2nd Prize</div>
+        <div id="layout2" class="bingo-layout">${generateTableCells()}</div>
+    </div>
+    <!-- First Prize -->
+    <div class="bingo-layout-container" id="layoutContainer3">
+        <div id="layoutTitle3" class="bingo-layout-title">1st Prize</div>
+        <div id="layout3" class="bingo-layout">${generateTableCells()}</div>
+    </div>
+</div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        let currentNumber = null;
-        
-        const triggerBtn = document.getElementById('triggerBtn');
-        const releaseBtn = document.getElementById('releaseBtn');
-        const ballDisplay = document.getElementById('ballDisplay');
-        
-        function getBingoLetter(number) {
-            if (number <= 15) return 'B';
-            if (number <= 30) return 'I';
-            if (number <= 45) return 'N';
-            if (number <= 60) return 'G';
-            return 'O';
-        }
 
-function updateBallDisplay(number) {
-    if (!number) {
-        ballDisplay.innerHTML = '';
-        ballDisplay.setAttribute('data-letter', '');
-        ballDisplay.className = 'ball-display';
-        return;
-    }
 
-    const letter = getBingoLetter(number);
-    ballDisplay.innerHTML = `<span>${number}</span>`;
-    ballDisplay.setAttribute('data-letter', letter);
-    ballDisplay.className = `ball-display ball-${letter}`;
-}
+		<div id="calledNumberContainer">
+          <span id="calledNumber"></span>
+        </div>
+				<div class="chime-toggle" id="chimeToggleContainer">
+            <input type="checkbox" id="chimeToggle" checked>
+            <label for="chimeToggle">Sound</label>
+        </div>
+    </div>
+    <div class="input-group" id="loginSection">
+      <input type="text" id="playerName" placeholder="Enter your name">
+      <button onclick="generateCard()">Generate Card & Login</button>
+    </div>
+    <div id="playerNameDisplay" class="player-name"></div>
+    <table id="bingoCard"></table>
+  </div>
 
-        // When Generate Number is clicked
-        triggerBtn.addEventListener('click', () => {
-            socket.emit('startGeneration');
-            updateBallDisplay(null);
-        });
 
-        // When Release is clicked
-        releaseBtn.addEventListener('click', () => {
-            if (currentNumber) {
-                socket.emit('releaseNumber', currentNumber);
-                currentNumber = null;
-                updateBallDisplay(null);
-            }
-        });
 
-        // Listen for the generated number from host
-        socket.on('numberGenerated', (number) => {
-            currentNumber = number;
-            updateBallDisplay(number);
-        });
-    </script>
+<audio id="chimeSound" src="/chime.mp3"></audio>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+<script src="script1.js"></script>
+
 </body>
 </html>
