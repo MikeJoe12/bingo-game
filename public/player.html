@@ -3,241 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mishail Bingo</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="style1.css">	
-
-<style>
-    .called-number-container {
-        position: relative !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        overflow: visible !important;
-    }
-
-    #playerOptions.player-options {
-        display: none !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        justify-content: flex-start !important;
-        gap: 4px !important;
-        margin-top: -6px !important;
-        margin-bottom: 6px !important;
-        margin-left: 0 !important;
-        padding: 0 !important;
-        width: fit-content !important;
-        max-width: 95vw !important;
-        position: relative !important;
-        z-index: 999 !important;
-        overflow: visible !important;
-        box-sizing: border-box !important;
-    }
-
-    #playerOptions.player-options.visible {
-        display: flex !important;
-    }
-
-    #playerOptions .player-option-row {
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 7px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        width: fit-content !important;
-        max-width: 95vw !important;
-        position: static !important;
-        left: auto !important;
-        right: auto !important;
-        top: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        text-align: left !important;
-        white-space: nowrap !important;
-        overflow: visible !important;
-        color: #000 !important;
-        font-size: 16px !important;
-        line-height: 1.2 !important;
-        font-weight: 400 !important;
-        cursor: pointer !important;
-        box-sizing: border-box !important;
-    }
-
-    #playerOptions .player-option-row input[type="checkbox"] {
-        position: static !important;
-        display: inline-block !important;
-        width: 16px !important;
-        height: 16px !important;
-        min-width: 16px !important;
-        flex: 0 0 16px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        transform: none !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        appearance: auto !important;
-        -webkit-appearance: checkbox !important;
-        vertical-align: middle !important;
-    }
-
-    #playerOptions .player-option-row span {
-        display: inline-block !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        color: #000 !important;
-        font-size: 16px !important;
-        line-height: 1.2 !important;
-        font-weight: 400 !important;
-        white-space: nowrap !important;
-    }
-
-    @media (max-width: 700px) {
-        #playerOptions.player-options {
-            align-self: flex-start !important;
-            margin-top: -10px !important;
-            margin-bottom: 4px !important;
-            margin-left: 0 !important;
-            padding-left: 0 !important;
-            max-width: calc(100vw - 14px) !important;
-        }
-
-        #playerOptions .player-option-row {
-            gap: 6px !important;
-            max-width: calc(100vw - 14px) !important;
-            font-size: 14px !important;
-            line-height: 1.12 !important;
-        }
-
-        #playerOptions .player-option-row input[type="checkbox"] {
-            width: 15px !important;
-            height: 15px !important;
-            min-width: 15px !important;
-            flex-basis: 15px !important;
-        }
-
-        #playerOptions .player-option-row span {
-            font-size: 14px !important;
-            line-height: 1.12 !important;
-        }
-    }
-</style>
-
-</head>
+    <title>Mishail's Bingo!</title>
+	<link rel="stylesheet" href="style.css">
+ </head>
 <body>
-<h1 class="page-title">Mishail Bingo</h1>
- <div class="container">
-      <div class="called-number-container">
-        
-        
-<div id="bingo-layouts" class="bingo-layouts">
-    <!-- Third Prize -->
-    <div class="bingo-layout-container" id="layoutContainer1">
-        <div id="layoutTitle1" class="bingo-layout-title">3rd Prize</div>
-        <div id="layout1" class="bingo-layout">${generateTableCells()}</div>
+<div id="login-container">
+        <div id="login-box">
+            <h2>Mishail Ultimate's Bingo</h2>
+            <input type="password" id="password-input" placeholder="Enter Password">
+            <button onclick="authenticateUser()">Login</button>
+            <p id="error-message"></p>
+        </div>
     </div>
-    <!-- Second Prize -->
-    <div class="bingo-layout-container" id="layoutContainer2">
-        <div id="layoutTitle2" class="bingo-layout-title">2nd Prize</div>
-        <div id="layout2" class="bingo-layout">${generateTableCells()}</div>
+	
+    <div class="container">
+        <div class="top-row">
+<div class="controls-left">
+    <div>
+        <input type="checkbox" id="enableDataCheckbox">
+        <label for="enableDataCheckbox">Play Online</label>
     </div>
-    <!-- First Prize -->
-    <div class="bingo-layout-container" id="layoutContainer3">
-        <div id="layoutTitle3" class="bingo-layout-title">1st Prize</div>
-        <div id="layout3" class="bingo-layout">${generateTableCells()}</div>
+    <div>
+        <input type="checkbox" id="speakCheckbox">
+        <label for="speakCheckbox">Enable Speech</label>
     </div>
 </div>
 
+            <div class="title">
+                <strong>Mishail's Ultimate Bingo</strong>
+            </div>
+            <button id="generateButton">Auto Number</button>
+        </div>
+        <div class="board" id="bingoBoard"></div>
+ 
+<div class="controls">
+            <div id="qrCode">
+                <img src="QRCode.jpg" alt="QR Code" style="width: 100%; height: 100%; border-radius: 10px;">
+            </div>
+            <div class="bingo-layouts">
+                <div class="bingo-layouts-container">
+                    <div class="bingo-layout-container" id="layoutContainer1">
+                        <div class="bingo-layout-title" id="layoutTitle1">3rd Prize</div>
+                        <div class="bingo-layout" id="layout1"></div>
+                    </div>
+                    <div class="bingo-layout-container" id="layoutContainer2">
+                        <div class="bingo-layout-title" id="layoutTitle2">2nd Prize</div>
+                        <div class="bingo-layout" id="layout2"></div>
+                    </div>
+                    <div class="bingo-layout-container" id="layoutContainer3">
+                        <div class="bingo-layout-title" id="layoutTitle3">1st Prize</div>
+                        <div class="bingo-layout" id="layout3"></div>
+                    </div>
+                </div>
+            </div>
 
-
-		<div id="calledNumberContainer">
-          <span id="calledNumber"></span>
+            <div class="small-ball" id="lastBall1"></div>
+            <div class="small-ball" id="lastBall2"></div>
+            <div class="small-ball" id="lastBall3"></div>
+            <div class="small-ball" id="lastBall4"></div>
+            <div id="calledBall" class="ball"></div>
+            <input type="text" id="numberInput" placeholder="">
+        </div>
+		    <div id="playerList">
+            <h3>Players & Cards:</h3>
+            <div id="playerCards"></div>
         </div>
 
-        <div class="player-options" id="playerOptions" aria-label="Player options">
-            <label class="player-option-row chime-toggle" id="chimeToggleContainer" for="chimeToggle">
-                <input type="checkbox" id="chimeToggle" checked>
-                <span>Sound</span>
-            </label>
-
-            <label class="player-option-row wake-lock-control" for="wakeLockToggle">
-                <input type="checkbox" id="wakeLockToggle" checked>
-                <span>Keep Screen Awake</span>
-            </label>
-        </div>
     </div>
-    <div class="input-group" id="loginSection">
-      <input type="text" id="playerName" placeholder="Enter your name">
-      <button onclick="generateCard()">Generate Card & Login</button>
-    </div>
-    <div id="playerNameDisplay" class="player-name"></div>
-    <table id="bingoCard"></table>
-  </div>
-
-
-
-<audio id="chimeSound" src="/chime.mp3"></audio>
-<script src="/socket.io/socket.io.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
-<script src="script1.js"></script>
-<script>
-(function () {
-    function hasPlayerLoggedIn() {
-        const loginSection = document.getElementById('loginSection');
-        const bingoCard = document.getElementById('bingoCard');
-        const playerNameDisplay = document.getElementById('playerNameDisplay');
-        return (
-            (loginSection && getComputedStyle(loginSection).display === 'none') ||
-            (bingoCard && bingoCard.rows && bingoCard.rows.length > 0) ||
-            (playerNameDisplay && playerNameDisplay.textContent.trim().length > 0)
-        );
-    }
-
-    function updatePlayerOptionsVisibility() {
-        const options = document.getElementById('playerOptions');
-        if (!options) return;
-
-        if (hasPlayerLoggedIn()) {
-            options.classList.add('visible');
-        } else {
-            options.classList.remove('visible');
-        }
-    }
-
-    function wrapGenerateCard() {
-        if (typeof window.generateCard !== 'function' || window.generateCard.__wakeLockWrapped) {
-            return;
-        }
-
-        const originalGenerateCard = window.generateCard;
-        window.generateCard = function () {
-            const result = originalGenerateCard.apply(this, arguments);
-
-            const wakeLockToggle = document.getElementById('wakeLockToggle');
-            if (wakeLockToggle && wakeLockToggle.checked && typeof window.enableWakeLock === 'function') {
-                window.enableWakeLock();
-            }
-
-            setTimeout(updatePlayerOptionsVisibility, 100);
-            return result;
-        };
-        window.generateCard.__wakeLockWrapped = true;
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        wrapGenerateCard();
-        updatePlayerOptionsVisibility();
-
-        const observerTarget = document.getElementById('loginSection') || document.body;
-        const observer = new MutationObserver(updatePlayerOptionsVisibility);
-        observer.observe(observerTarget, { attributes: true, childList: true, subtree: true });
-    });
-
-    wrapGenerateCard();
-    setTimeout(updatePlayerOptionsVisibility, 100);
-})();
-</script>
-
+    <script src="/socket.io/socket.io.js"></script>
+	<script src="script.js"></script>
 </body>
 </html>
