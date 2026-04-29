@@ -1,415 +1,526 @@
-	        :root {
-            --primary-color: #3b82f6;
-            --secondary-color: #10b981;
-            --third-color: #E11D48;
-            --background-color: #f0f4f8;
-            --card-bg: #f1f5f9;
-            --cell-background: #ffffff;
-            --text-color: #1f2937;
-        }
-/* Page Title */
-.page-title {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    text-align: center;
-    margin-bottom: 20px;
-    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Ensure it spans the full width */
-    position: absolute; /* Position it at the top of the page */
-    top: 20px; /* Adjust spacing from the top */
+let isPlayerActive = false;
+let isLoginEnabled = false;
+let playerName = '';
+let currentPlayerName = '';
+const socket = io();
+
+// Helper functions
+function getMarkedNumbers() {
+    return JSON.parse(localStorage.getItem('markedNumbers') || '[]');
 }
 
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--background-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            line-height: 1.6;
-            background: linear-gradient(135deg, #f0f4f8 0%, #e6eaf0 100%);
-        }
-
-        .container {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 
-                0 15px 35px rgba(0,0,0,0.1), 
-                0 5px 15px rgba(0,0,0,0.05);
-            padding: 30px;
-            width: 100%;
-            max-width: 600px;
-            text-align: center;
-        }
-
-        h1 {
-            color: var(--primary-color);
-            margin-bottom: 20px;
-            font-weight: 600;
-            font-size: 2.5rem;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.1);
-        }
-
-        .player-name {
-            font-size: 1.5rem;
-            color: black;
-            margin-bottom: 15px;
-            font-weight: 600;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .input-group {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            max-width: 300px;
-            margin-bottom: 10px;
-            padding: 16px 15px;
-            font-size: 1.2rem;
-            border: 2px solid var(--primary-color);
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            background-color: white;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2), 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .called-number-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    margin-top: 20px;
+function getCalledNumbers() {
+    return JSON.parse(localStorage.getItem('calledNumbers') || '[]');
 }
 
-        .chime-toggle {
-            position: absolute;
-            left: -5px;
-            display: flex;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-			margin-top: 150px;
-        }
-
-        .chime-toggle.visible {
-            opacity: 1;
-        }
-
-        .chime-toggle input[type="checkbox"] {
-            margin-right: 10px;
-            width: auto;
-        }
-
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 300px;
-            font-size: 1rem;
-            padding: 12px;
-        }
-
-#calledNumberContainer {
-    position: relative;
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
-    margin-bottom: 20px;
-    overflow: hidden;
+function generateUserId() {
+    return 'user_' + Math.random().toString(36).substr(2, 9);
 }
 
-.ball-letter {
-    position: absolute;
-    top: -5%;
-    font-size: 2.2rem;
-    font-weight: bold;
+function getUserId() {
+    let userId = localStorage.getItem('bingoUserId');
+    if (!userId) {
+        userId = generateUserId();
+        localStorage.setItem('bingoUserId', userId);
+    }
+    return userId;
 }
 
-.ball-number {
-    font-size: 4rem;
-    font-weight: bold;
-    margin-top: 15px;
+function generateTableCells() {
+    let cells = '';
+    for (let i = 0; i < 25; i++) {
+        cells += `<div class="bingo-layout-cell"></div>`;
+    }
+    return cells;
 }
 
-.ball-shine {
-    position: absolute;
-    width: 20%;
-    height: 20%;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    top: 15%;
-    left: 15%;
+const chimeSound = new Howl({
+    src: ['/chime.mp3'],
+    volume: 0.5
+});
+
+function playChime() {
+    const chimeToggle = document.getElementById('chimeToggle');
+    if (chimeToggle && chimeToggle.checked) {
+        chimeSound.play();
+    }
 }
 
-        #bingoCard {
-            width: 110%;
-            table-layout: fixed;
-            border-collapse: separate;
-            border-spacing: 5px;
-			margin-left: -15px;
-        }
+function updateCellStatus(cell) {
+    if (!cell || cell.textContent === 'FREE') return;
+    
+    const number = parseInt(cell.textContent);
+    if (isNaN(number)) return;
+    
+    const markedNumbers = getMarkedNumbers();
+    const calledNumbers = getCalledNumbers();
+    
+    cell.classList.remove('red-border', 'marked');
+    
+    if (markedNumbers.includes(number)) {
+        cell.classList.add('marked');
+    } else if (calledNumbers.includes(number)) {
+        cell.classList.add('red-border');
+    }
+}
+// Add these socket event handlers
+socket.on('gameReset', () => {
+    // Clear all stored numbers
+    localStorage.removeItem('calledNumbers');
+    localStorage.removeItem('markedNumbers');
+    localStorage.removeItem('lastCalledNumber');
+});
 
-        #bingoCard th {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 900;
-            font-size: 2rem;
-            text-transform: uppercase;
-            width: 20%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
+socket.on('forceDisconnect', () => {
+    // Clear local storage
+    localStorage.removeItem('calledNumbers');
+    localStorage.removeItem('markedNumbers');
+    localStorage.removeItem('lastCalledNumber');
+    
+    // Deactivate player
+    isPlayerActive = false;
+    
+    // Show message about game reset
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'deactivation-message';
+    messageDiv.innerHTML = `
+        <p>The game has been reset by the host.</p>
+        <p>Please wait for the host to enable player registration again.</p>
+        <button onclick="window.location.reload()">Refresh Page</button>
+    `;
+    document.body.appendChild(messageDiv);
+});
+function updateCalledNumberDisplay(lastCalledNumber) {
+    const calledNumberContainer = document.getElementById('calledNumberContainer');
+    if (!calledNumberContainer) return;
 
-        #bingoCard td {
-            background-color: var(--cell-background);
-            border-radius: 8px;
-            height: 80px;
-            width: 30%;
-            font-size: 2rem;
-            font-weight: 900;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            vertical-align: middle;
-            box-shadow: 
-                0 10px 20px rgba(0,0,0,0.2),
-                3px 3px 6px rgba(255,255,255,0.3) inset,
-                -3px -3px 6px rgba(0,0,0,0.2) inset;
-            border: 2px solid var(--primary-color);
-        }
+    calledNumberContainer.innerHTML = `
+        <span class="ball-letter">${lastCalledNumber.letter}</span>
+        <span class="ball-number">${lastCalledNumber.number}</span>
+        <div class="ball-shine"></div>
+    `;
 
-        #bingoCard td.marked {
-            background-color: var(--secondary-color);
-            color: white;
-            font-weight: bold;
-            border-color: var(--secondary-color);
-        }
+    let bgColor;
+    if (lastCalledNumber.letter === 'B') bgColor = 'radial-gradient(circle at 30% 30%, #4169E1, #0000CD)';
+    else if (lastCalledNumber.letter === 'I') bgColor = 'radial-gradient(circle at 30% 30%, #FF4500, #DC143C)';
+    else if (lastCalledNumber.letter === 'N') bgColor = 'white';
+    else if (lastCalledNumber.letter === 'G') bgColor = 'radial-gradient(circle at 30% 30%, #32CD32, #006400)';
+    else if (lastCalledNumber.letter === 'O') bgColor = 'radial-gradient(circle at 30% 30%, #FFD700, #DAA520)';
 
-        #bingoCard td.free-cell {
-            background-color: var(--secondary-color);
-            color: white;
-            cursor: default;
-            font-size: 1.2rem;
-            font-weight: 900;
-            box-shadow: 
-                0 10px 20px rgba(0,0,0,0.2),
-                3px 3px 6px rgba(255,255,255,0.3) inset,
-                -3px -3px 6px rgba(0,0,0,0.2) inset;
-        }
+    calledNumberContainer.style.background = bgColor;
+    calledNumberContainer.style.color = (lastCalledNumber.letter === 'N' || lastCalledNumber.letter === 'O') ? 'black' : 'white';
+}
 
-        @media (max-width: 480px) {
-            .container {
-                padding: 15px;
+function handleCellClick(cell) {
+    if (!isPlayerActive || cell.textContent === 'FREE') return;
+    
+    const number = parseInt(cell.textContent);
+    if (isNaN(number)) return;
+    
+    const calledNumbers = getCalledNumbers();
+    if (!calledNumbers.includes(number)) return; // Only allow clicking called numbers
+    
+    const markedNumbers = getMarkedNumbers();
+    
+    if (markedNumbers.includes(number)) {
+        // Unmark the number
+        const index = markedNumbers.indexOf(number);
+        markedNumbers.splice(index, 1);
+        cell.classList.remove('marked');
+        cell.classList.add('red-border');
+    } else {
+        // Mark the number
+        markedNumbers.push(number);
+        cell.classList.add('marked');
+        cell.classList.remove('red-border');
+    }
+    
+    localStorage.setItem('markedNumbers', JSON.stringify(markedNumbers));
+    socket.emit('markNumber', { playerName: currentPlayerName, number, userId: getUserId() });
+}
+
+function createNewCard(userId, playerName) {
+    const card = [];
+    const usedNumbers = new Set();
+    const headers = ['B', 'I', 'N', 'G', 'O'];
+
+    // Generate card numbers
+    for (let i = 0; i < 5; i++) {
+        const row = [];
+        for (let j = 0; j < 5; j++) {
+            let num;
+            if (i === 2 && j === 2) {
+                num = 'FREE';
+            } else {
+                do {
+                    num = Math.floor(Math.random() * 15) + 1 + (j * 15);
+                } while (usedNumbers.has(num));
+                usedNumbers.add(num);
             }
+            row.push(num);
+        }
+        card.push(row);
+    }
 
-            #bingoCard td {
-                height: 60px;
-                font-size: 1.7rem;
-            }
+    // Save card to server
+    fetch('/saveCard', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            userId,
+            playerName, 
+            card,
+            markedNumbers: []
+        }),
+    })
+    .then(() => {
+        loadExistingCard({ playerName, card, markedNumbers: [] });
+    });
+}
 
-            #bingoCard th {
-                font-size: 1.5rem;
+function loadExistingCard(playerData) {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('playerNameDisplay').textContent = `${playerData.playerName}'s Bingo Card`;
+    document.getElementById('playerNameDisplay').style.display = 'block';
+    document.getElementById('chimeToggleContainer').classList.add('visible');
+    
+    const table = document.getElementById('bingoCard');
+    table.innerHTML = '';
+    
+    const headerRow = table.insertRow();
+    ['B', 'I', 'N', 'G', 'O'].forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+    });
+    
+    for (let i = 0; i < 5; i++) {
+        const row = table.insertRow();
+        for (let j = 0; j < 5; j++) {
+            const cell = row.insertCell();
+            const number = playerData.card[i][j];
+            cell.textContent = number;
+            
+            if (number === 'FREE') {
+                cell.classList.add('free-cell');
+            } else {
+                cell.onclick = () => handleCellClick(cell);
             }
         }
+    }
+    
+    currentPlayerName = playerData.playerName;
+    playerName = playerData.playerName;
+    isPlayerActive = true;
+    
+    // Initialize with any existing marked numbers
+    if (playerData.markedNumbers) {
+        localStorage.setItem('markedNumbers', JSON.stringify(playerData.markedNumbers));
+    }
+    
+    // Request and load current game state
+    socket.emit('requestCalledNumbers');
+    socket.emit('playerActivated', playerData.playerName);
+}
 
-        @keyframes cellFlash {
-            0%, 100% { 
-                transform: scale(1);
-                background-color: var(--cell-background);
-                border-color: var(--primary-color);
+function disableBingoCard() {
+    const bingoCard = document.getElementById('bingoCard');
+    if (bingoCard) {
+        bingoCard.classList.add('disabled');
+        const cells = bingoCard.getElementsByTagName('td');
+        for (let cell of cells) {
+            cell.onclick = null;
+            cell.style.cursor = 'not-allowed';
+        }
+    }
+}
+
+function showDeactivationMessage() {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'deactivation-message';
+    messageDiv.innerHTML = `
+        <p>Your bingo card has been deactivated by the host.</p>
+        <button onclick="window.location.reload()">Start New Game</button>
+    `;
+    document.body.appendChild(messageDiv);
+}
+
+function generateCard() {
+    if (!isLoginEnabled) {
+        alert('Login is currently disabled by the host. Please wait for the host to enable player login.');
+        return;
+    }
+
+    const userId = getUserId();
+    const playerNameInput = document.getElementById('playerName');
+    const enteredName = playerNameInput.value.trim();
+
+    if (!enteredName) {
+        alert('Please enter your name');
+        return;
+    }
+
+    fetch(`/checkUsername/${encodeURIComponent(enteredName)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                const existingErrorMsg = document.getElementById('usernameError');
+                if (!existingErrorMsg) {
+                    const errorMsg = document.createElement('div');
+                    errorMsg.id = 'usernameError';
+                    errorMsg.style.color = 'red';
+                    errorMsg.style.marginTop = '5px';
+                    errorMsg.style.fontSize = '0.9rem';
+                    errorMsg.textContent = 'This username already exists. Please choose a different name.';
+                    playerNameInput.parentNode.insertBefore(errorMsg, playerNameInput.nextSibling);
+                }
+                playerNameInput.style.borderColor = 'red';
+                return;
             }
-            50% { 
-                transform: scale(2.1);
-                background-color: var(--third-color);
-                border-color: var(--third-color);
+
+            const errorMsg = document.getElementById('usernameError');
+            if (errorMsg) {
+                errorMsg.remove();
+            }
+            playerNameInput.style.borderColor = '';
+
+            currentPlayerName = enteredName;
+            playerName = enteredName;
+
+            chimeSound.play();
+            document.getElementById('chimeToggleContainer').classList.add('visible');
+            
+            fetch(`/checkExistingCard/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        loadExistingCard(data.playerData);
+                    } else {
+                        createNewCard(userId, playerName);
+                        socket.emit('playerActivated', playerName);
+                        isPlayerActive = true;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        })
+        .catch(error => {
+            console.error('Error checking username:', error);
+            alert('An error occurred while checking the username. Please try again.');
+        });
+}
+
+// Socket event handlers
+socket.on('displayCalledNumber', (number) => {
+    if (!isPlayerActive) return;
+    
+    let letter = '';
+    if (number >= 1 && number <= 15) letter = 'B';
+    else if (number >= 16 && number <= 30) letter = 'I';
+    else if (number >= 31 && number <= 45) letter = 'N';
+    else if (number >= 46 && number <= 60) letter = 'G';
+    else if (number >= 61 && number <= 75) letter = 'O';
+    
+    const calledNumbers = getCalledNumbers();
+    if (!calledNumbers.includes(number)) {
+        calledNumbers.push(number);
+        localStorage.setItem('calledNumbers', JSON.stringify(calledNumbers));
+    }
+    
+    localStorage.setItem('lastCalledNumber', JSON.stringify({ number, letter }));
+    updateCalledNumberDisplay({ number, letter });
+    
+    const cells = document.querySelectorAll('#bingoCard td');
+    cells.forEach(cell => {
+        if (parseInt(cell.textContent) === number) {
+            const markedNumbers = getMarkedNumbers();
+            if (!markedNumbers.includes(number)) {
+                cell.classList.add('matched');
+                setTimeout(() => {
+                    cell.classList.remove('matched');
+                    updateCellStatus(cell);
+                }, 1000);
             }
         }
+    });
+    
+    playChime();
+});
 
-#bingoCard td.red-border {
-    border-color: var(--third-color);
-    border-width: 6px;
-    border-style: solid;
-}
-
-
-        #bingoCard td.matched {
-            animation: cellFlash 1s ease-in-out;
-            color: white;
-            font-weight: bold;
+socket.on('allCalledNumbers', (numbers) => {
+    if (!Array.isArray(numbers) || !numbers.length) return;
+    
+    localStorage.setItem('calledNumbers', JSON.stringify(numbers));
+    
+    const cells = document.querySelectorAll('#bingoCard td');
+    cells.forEach(cell => {
+        if (cell.textContent !== 'FREE') {
+            updateCellStatus(cell);
         }
-		.bingo-layout-container {
-    margin: 20px;
+    });
+    
+    const lastNumber = numbers[numbers.length - 1];
+    if (lastNumber) {
+        let letter = '';
+        if (lastNumber >= 1 && lastNumber <= 15) letter = 'B';
+        else if (lastNumber >= 16 && lastNumber <= 30) letter = 'I';
+        else if (lastNumber >= 31 && lastNumber <= 45) letter = 'N';
+        else if (lastNumber >= 46 && lastNumber <= 60) letter = 'G';
+        else if (lastNumber >= 61 && lastNumber <= 75) letter = 'O';
+        
+        const lastCalledNumber = { number: lastNumber, letter };
+        localStorage.setItem('lastCalledNumber', JSON.stringify(lastCalledNumber));
+        updateCalledNumberDisplay(lastCalledNumber);
+    }
+});
+
+socket.on('playerDeactivated', (deactivatedPlayerName) => {
+    if (deactivatedPlayerName === currentPlayerName) {
+        isPlayerActive = false;
+        disableBingoCard();
+        showDeactivationMessage();
+    }
+});
+
+socket.on('layoutsUpdate', (layoutsData) => {
+    Object.keys(layoutsData).forEach((key, index) => {
+        const layoutData = layoutsData[key];
+        const layoutContainerId = `layoutContainer${index + 1}`;
+        const layoutContainer = document.getElementById(layoutContainerId);
+
+        if (!layoutContainer) {
+            const newContainer = document.createElement('div');
+            newContainer.id = layoutContainerId;
+            newContainer.className = 'bingo-layout-container';
+            newContainer.innerHTML = `
+                <div id="layoutTitle${index + 1}" class="bingo-layout-title">${layoutData.title || ''}</div>
+                <div id="layout${index + 1}" class="bingo-layout">${layoutData.layoutHTML}</div>
+            `;
+            document.getElementById('bingo-layouts').appendChild(newContainer);
+        } else {
+            const titleElement = layoutContainer.querySelector(`#layoutTitle${index + 1}`);
+            const layoutElement = layoutContainer.querySelector(`#layout${index + 1}`);
+
+            if (titleElement) titleElement.textContent = layoutData.title || '';
+            if (layoutElement) layoutElement.innerHTML = layoutData.layoutHTML;
+        }
+
+        const container = document.getElementById(layoutContainerId);
+        if (layoutData.disabled) {
+            container.classList.add('disabled');
+            container.querySelector('.bingo-layout-title').classList.add('disabled');
+        } else {
+            container.classList.remove('disabled');
+            container.querySelector('.bingo-layout-title').classList.remove('disabled');
+        }
+    });
+});
+
+socket.on('loginStatusChanged', ({ enabled }) => {
+    isLoginEnabled = enabled;
+    updateLoginUI();
+});
+
+socket.on('connect', () => {
+    if (isPlayerActive && currentPlayerName) {
+        socket.emit('requestCalledNumbers');
+        socket.emit('playerActivated', currentPlayerName);
+    }
+});
+
+socket.on('disconnect', () => {
+    isPlayerActive = false;
+});
+
+// Initial page load setup
+window.addEventListener('load', async () => {
+	try {
+        const response = await fetch('/loginStatus');
+        const data = await response.json();
+        isLoginEnabled = data.enabled;
+        updateLoginUI();
+        
+        if (isLoginEnabled) {
+            const userId = getUserId();
+            const cardResponse = await fetch(`/checkExistingCard/${userId}`);
+            const cardData = await cardResponse.json();
+            
+            if (cardData.exists && cardData.playerData) {
+                document.getElementById('playerName').value = cardData.playerData.playerName;
+                if (cardData.playerData.card && Array.isArray(cardData.playerData.card)) {
+                    loadExistingCard(cardData.playerData);
+                    
+                    // After loading card, update cells with current state
+                    const cells = document.querySelectorAll('#bingoCard td');
+                    cells.forEach(cell => {
+                        const number = parseInt(cell.textContent);
+                        if (!isNaN(number)) {
+                            updateCellStatus(cell);
+                        }
+                    });
+
+                    // Restore last called number display if exists
+                    const lastCalledNumber = JSON.parse(localStorage.getItem('lastCalledNumber'));
+                    if (lastCalledNumber) {
+                        updateCalledNumberDisplay(lastCalledNumber);
+                    }
+
+                    // Request fresh state from server
+                    socket.emit('requestCalledNumbers');
+                    socket.emit('playerActivated', cardData.playerData.playerName);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error during initialization:', error);
+    }
+});
+
+function updateLoginUI() {
+    const loginSection = document.getElementById('loginSection');
+    const loginMessage = document.getElementById('loginMessage') || createLoginMessage();
+    
+    if (isLoginEnabled) {
+        loginSection.style.display = 'block';
+        loginMessage.style.display = 'none';
+    } else {
+        loginSection.style.display = 'none';
+        loginMessage.style.display = 'block';
+    }
 }
 
-/* Main container for layout */
-.main-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-    max-width: 800px;
-    margin: 0 auto;
+function createLoginMessage() {
+    const message = document.createElement('div');
+    message.id = 'loginMessage';
+    message.className = 'login-message';
+    message.innerHTML = `
+        <p>Login is currently disabled by the host.</p>
+        <p>Please wait for the host to enable player registration.</p>
+    `;
+    document.querySelector('.container').insertBefore(message, document.getElementById('loginSection'));
+    return message;
 }
 
-/* Called number section */
-.called-number-section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+// Function to mark numbers
+function markNumber(number, playerName) {
+    const userId = getUserId();
+    socket.emit('markNumber', { playerName, number, userId });
 }
 
-
-
-/* Bingo Layouts Section */
-.bingo-layouts {
-    display: flex;
-    flex-direction: row; /* Align tables next to each other */
-    gap: -80px; /* Reduced space between tables */
-    justify-content: center;
-    margin-bottom: 10px; /* Reduced space below the tables */
-}
-
-/* Bingo Layout Container */
-.bingo-layout-container {
-    text-align: center;
-    margin-bottom: 0; /* Remove extra space between containers */
-}
-
-/* Bingo Layout Title */
-.bingo-layout-title {
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-bottom: 3px; /* Reduce space below titles */
-}
-
-/* Resize Bingo Layouts */
-.bingo-layout {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 0px; /* Minimal gap between cells */
-    width: 70px; /* Compact size for tables */
-    height: auto;
-}
-
-/* Resize Cells */
-.bingo-layout-cell {
-    width: 12px;
-    height: 12px;
-    background-color: #f1f1f1;
-    border: 1px solid #ccc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 1px;
-    transition: background-color 0.3s;
-}
-
-.bingo-layout-cell.highlighted {
-    background-color: #ff6347; /* Highlighted color */
-    color: white;
-    font-size: 0.0rem; /* Ensure no visible text */
-}
-
-.bingo-layout-container.disabled .bingo-layout-cell {
-    background-color: #555;
-    cursor: not-allowed;
-}
-
-.bingo-layout-title.disabled {
-    color: #888;
-    text-decoration: line-through;
-}
-// Add this CSS to style1.css
-#usernameError {
-    color: red;
-    margin-top: 5px;
-    font-size: 0.9rem;
-    text-align: center;
-    max-width: 300px;
-    margin-left: auto;
-    margin-right: auto;
-}
-/* Add to style1.css */
-.disabled {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-.deactivation-message {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    text-align: center;
-    z-index: 1000;
-}
-
-.deactivation-message button {
-    margin-top: 15px;
-    padding: 8px 16px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.deactivation-message button:hover {
-    background-color: #45a049;
-}
-/* Add to style1.css */
-.login-message {
-    text-align: center;
-    padding: 20px;
-    margin: 20px auto;
-    max-width: 400px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.login-message p {
-    margin: 10px 0;
-    color: #6c757d;
-}
-
-.login-message p:first-child {
-    font-weight: bold;
-    color: #dc3545;
+async function checkExistingCard(userId) {
+    if (!isLoginEnabled) return;
+    
+    try {
+        const response = await fetch(`/checkExistingCard/${userId}`);
+        const data = await response.json();
+        if (data.exists && data.playerData) {
+            document.getElementById('playerName').value = data.playerData.playerName;
+            if (data.playerData.card && Array.isArray(data.playerData.card)) {
+                loadExistingCard(data.playerData);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading existing card:', error);
+    }
 }
