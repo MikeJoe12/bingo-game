@@ -1448,3 +1448,56 @@ document.getElementById('generateButton').addEventListener('click', function() {
         callNumber(number);
     }, 3000);
 });
+
+
+// -------------------------------
+// Keep Screen Awake (Screen Wake Lock API)
+// -------------------------------
+let wakeLock = null;
+let keepAwakeEnabled = false;
+
+async function enableWakeLock() {
+    const wakeLockToggle = document.getElementById('wakeLockToggle');
+    if (!wakeLockToggle) return;
+    if (!('wakeLock' in navigator)) {
+        alert('Keep Screen Awake is not supported on this browser. Try Chrome or Edge on Android.');
+        wakeLockToggle.checked = false;
+        keepAwakeEnabled = false;
+        return;
+    }
+    try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        keepAwakeEnabled = true;
+        wakeLock.addEventListener('release', () => { wakeLock = null; console.log('Screen Wake Lock released.'); });
+        console.log('Screen Wake Lock enabled.');
+    } catch (error) {
+        console.error('Wake Lock failed:', error);
+        alert('Could not keep the screen awake. Your browser, battery saver, or device settings may have blocked it.');
+        wakeLockToggle.checked = false;
+        keepAwakeEnabled = false;
+    }
+}
+
+async function disableWakeLock() {
+    keepAwakeEnabled = false;
+    if (wakeLock) {
+        try { await wakeLock.release(); } catch (error) { console.error('Wake Lock release failed:', error); }
+        wakeLock = null;
+    }
+    console.log('Screen Wake Lock disabled.');
+}
+
+function setupWakeLockToggle() {
+    const wakeLockToggle = document.getElementById('wakeLockToggle');
+    if (!wakeLockToggle) return;
+    wakeLockToggle.addEventListener('change', async () => {
+        if (wakeLockToggle.checked) await enableWakeLock();
+        else await disableWakeLock();
+    });
+}
+
+document.addEventListener('visibilitychange', async () => {
+    if (keepAwakeEnabled && document.visibilityState === 'visible' && !wakeLock) await enableWakeLock();
+});
+
+setupWakeLockToggle();

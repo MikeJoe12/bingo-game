@@ -6,6 +6,124 @@
     <title>Mishail Bingo</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="style1.css">	
+
+<style>
+    .called-number-container {
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        overflow: visible !important;
+    }
+
+    #playerOptions.player-options {
+        display: none !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+        gap: 4px !important;
+        margin-top: -6px !important;
+        margin-bottom: 6px !important;
+        margin-left: 0 !important;
+        padding: 0 !important;
+        width: fit-content !important;
+        max-width: 95vw !important;
+        position: relative !important;
+        z-index: 999 !important;
+        overflow: visible !important;
+        box-sizing: border-box !important;
+    }
+
+    #playerOptions.player-options.visible {
+        display: flex !important;
+    }
+
+    #playerOptions .player-option-row {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 7px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: fit-content !important;
+        max-width: 95vw !important;
+        position: static !important;
+        left: auto !important;
+        right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        text-align: left !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        color: #000 !important;
+        font-size: 16px !important;
+        line-height: 1.2 !important;
+        font-weight: 400 !important;
+        cursor: pointer !important;
+        box-sizing: border-box !important;
+    }
+
+    #playerOptions .player-option-row input[type="checkbox"] {
+        position: static !important;
+        display: inline-block !important;
+        width: 16px !important;
+        height: 16px !important;
+        min-width: 16px !important;
+        flex: 0 0 16px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        appearance: auto !important;
+        -webkit-appearance: checkbox !important;
+        vertical-align: middle !important;
+    }
+
+    #playerOptions .player-option-row span {
+        display: inline-block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color: #000 !important;
+        font-size: 16px !important;
+        line-height: 1.2 !important;
+        font-weight: 400 !important;
+        white-space: nowrap !important;
+    }
+
+    @media (max-width: 700px) {
+        #playerOptions.player-options {
+            align-self: flex-start !important;
+            margin-top: -10px !important;
+            margin-bottom: 4px !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            max-width: calc(100vw - 14px) !important;
+        }
+
+        #playerOptions .player-option-row {
+            gap: 6px !important;
+            max-width: calc(100vw - 14px) !important;
+            font-size: 14px !important;
+            line-height: 1.12 !important;
+        }
+
+        #playerOptions .player-option-row input[type="checkbox"] {
+            width: 15px !important;
+            height: 15px !important;
+            min-width: 15px !important;
+            flex-basis: 15px !important;
+        }
+
+        #playerOptions .player-option-row span {
+            font-size: 14px !important;
+            line-height: 1.12 !important;
+        }
+    }
+</style>
+
 </head>
 <body>
 <h1 class="page-title">Mishail Bingo</h1>
@@ -36,9 +154,17 @@
 		<div id="calledNumberContainer">
           <span id="calledNumber"></span>
         </div>
-				<div class="chime-toggle" id="chimeToggleContainer">
-            <input type="checkbox" id="chimeToggle" checked>
-            <label for="chimeToggle">Sound</label>
+
+        <div class="player-options" id="playerOptions" aria-label="Player options">
+            <label class="player-option-row chime-toggle" id="chimeToggleContainer" for="chimeToggle">
+                <input type="checkbox" id="chimeToggle" checked>
+                <span>Sound</span>
+            </label>
+
+            <label class="player-option-row wake-lock-control" for="wakeLockToggle">
+                <input type="checkbox" id="wakeLockToggle" checked>
+                <span>Keep Screen Awake</span>
+            </label>
         </div>
     </div>
     <div class="input-group" id="loginSection">
@@ -55,6 +181,63 @@
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
 <script src="script1.js"></script>
+<script>
+(function () {
+    function hasPlayerLoggedIn() {
+        const loginSection = document.getElementById('loginSection');
+        const bingoCard = document.getElementById('bingoCard');
+        const playerNameDisplay = document.getElementById('playerNameDisplay');
+        return (
+            (loginSection && getComputedStyle(loginSection).display === 'none') ||
+            (bingoCard && bingoCard.rows && bingoCard.rows.length > 0) ||
+            (playerNameDisplay && playerNameDisplay.textContent.trim().length > 0)
+        );
+    }
+
+    function updatePlayerOptionsVisibility() {
+        const options = document.getElementById('playerOptions');
+        if (!options) return;
+
+        if (hasPlayerLoggedIn()) {
+            options.classList.add('visible');
+        } else {
+            options.classList.remove('visible');
+        }
+    }
+
+    function wrapGenerateCard() {
+        if (typeof window.generateCard !== 'function' || window.generateCard.__wakeLockWrapped) {
+            return;
+        }
+
+        const originalGenerateCard = window.generateCard;
+        window.generateCard = function () {
+            const result = originalGenerateCard.apply(this, arguments);
+
+            const wakeLockToggle = document.getElementById('wakeLockToggle');
+            if (wakeLockToggle && wakeLockToggle.checked && typeof window.enableWakeLock === 'function') {
+                window.enableWakeLock();
+            }
+
+            setTimeout(updatePlayerOptionsVisibility, 100);
+            return result;
+        };
+        window.generateCard.__wakeLockWrapped = true;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        wrapGenerateCard();
+        updatePlayerOptionsVisibility();
+
+        const observerTarget = document.getElementById('loginSection') || document.body;
+        const observer = new MutationObserver(updatePlayerOptionsVisibility);
+        observer.observe(observerTarget, { attributes: true, childList: true, subtree: true });
+    });
+
+    wrapGenerateCard();
+    setTimeout(updatePlayerOptionsVisibility, 100);
+})();
+</script>
 
 </body>
 </html>
